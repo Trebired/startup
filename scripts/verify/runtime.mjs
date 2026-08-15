@@ -5,10 +5,19 @@ import { fileURLToPath } from "node:url";
 
 import {
   checkRequirements,
+  createLifecycleFailureController,
   createStartupRuntime,
+  createStartupStateFlag,
+  createStartupTaskManager,
   emitStartupMessage,
+  hasAnyTokenFlag,
+  listenStrict,
   loadConfig,
+  parsePortStrict,
+  parseTokenFlags,
+  readPairedEnvValues,
   runStartup,
+  runStartupSteps,
 } from "#index";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -19,6 +28,7 @@ async function main() {
   await verifyConfigLoading();
   await verifyRequirements();
   await verifyMessages();
+  await verifyGenericHelpers();
   await verifyRuntime();
   await verifyShutdownSignals();
   console.log("Runtime verification succeeded.");
@@ -31,7 +41,7 @@ async function resetTemp() {
 
 async function verifyConfigLoading() {
   const projectRoot = path.join(tempRoot, "config");
-  await writeStartupConfig(projectRoot, "0.3.99");
+  await writeStartupConfig(projectRoot, "0.4.99");
   const loaded = await loadConfig(projectRoot);
   assert.equal(loaded.config.product.name, "Verify");
 
@@ -91,7 +101,7 @@ async function verifyRequirements() {
 
 function requirementConfig(dirPath) {
   return {
-    forVersion: "0.3.99",
+    forVersion: "0.4.99",
     product: { name: "Verify", version: "9.9.9" },
     requirements: {
       env: { required: ["DATA_DIR", "INSTANCE"] },
@@ -139,6 +149,81 @@ async function verifyMessages() {
   emitStartupMessage({ config, logger: captureLogger(logs) }, "ready", { port: 42, startupMs: 1250 });
   assert.deepEqual(logs.map((event) => event.message), ["Ready Verify", "Port 42"]);
   assert.equal(logs[0].metadata.static, true);
+}
+
+async function verifyGenericHelpers() {
+  verifyBootHelpers();
+  await verifyLifecycleController();
+  verifyStateFlag();
+  await verifyTaskHelpers();
+  await verifyListenHelpers();
+}
+
+function verifyBootHelpers() {
+  const flags = parseTokenFlags("platform,force", ["platform", "host_agent", "force"]);
+  assert.equal(flags.platform, true);
+  assert.equal(flags.host_agent, false);
+  assert.equal(hasAnyTokenFlag(flags, ["host_agent", "force"]), true);
+  const pair = readPairedEnvValues({ USER: "admin", PASSWORD: "secret" }, ["USER", "PASSWORD"]);
+  assert.equal(pair.enabled, true);
+  assert.throws(() => readPairedEnvValues({ USER: "admin" }, ["USER", "PASSWORD"]), /startup-paired-env-incomplete/u);
+}
+
+async function verifyLifecycleController() {
+  const logs = [];
+  let handled = null;
+  const controller = createLifecycleFailureController({
+      logger: standardLogger(logs),
+  });
+  controller.setHandler((input) => {
+      handled = input;
+  });
+  await controller.request({ reason: "verify", statusCode: "verify-failed" });
+  assert.equal(handled.reason, "verify");
+  assert.equal(handled.statusCode, "verify-failed");
+  assert.ok(logs.some((event) => event.group === "trebired.startup.lifecycle"));
+}
+
+function verifyStateFlag() {
+  const flag = createStartupStateFlag();
+  assert.equal(flag.isSet(), false);
+  flag.set();
+  assert.equal(flag.isSet(), true);
+  flag.clear();
+  assert.equal(flag.isSet(), false);
+}
+
+async function verifyTaskHelpers() {
+  const logs = [];
+  const manager = createStartupTaskManager({ logger: standardLogger(logs) });
+  let stopped = false;
+  manager.startService({
+      label: "verify service",
+      start: () => ({ stop: () => { stopped = true; } }),
+      startedMessage: "service started",
+  });
+  manager.schedule({
+      label: "verify scheduled",
+      delayMs: 1,
+      run: () => logs.push({ group: "verify", level: "info", message: "scheduled" }),
+  });
+  await waitFor(() => logs.some((event) => event.message === "scheduled"));
+  await runStartupSteps([
+      { id: "verify-step", run: () => undefined },
+      { id: "verify-failing-step", run: () => { throw new Error("expected"); } },
+    ], { logger: standardLogger(logs) });
+  manager.stop();
+  assert.equal(stopped, true);
+  assert.ok(logs.some((event) => event.message === "verify-failing-step failed"));
+}
+
+async function verifyListenHelpers() {
+  assert.equal(parsePortStrict("4321"), 4321);
+  assert.throws(() => parsePortStrict("nope"), /integer between/u);
+  const server = await import("node:http").then((http) => http.createServer((_req, res) => res.end("ok")));
+  const address = await listenStrict(server, { host: "127.0.0.1", port: 0 });
+  assert.ok(address.port > 0);
+  await new Promise((resolve) => server.close(resolve));
 }
 
 async function verifyRuntime() {

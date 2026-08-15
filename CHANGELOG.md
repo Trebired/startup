@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- Added generic startup helpers for boot token parsing, lifecycle failure handling, startup state flags, strict listen handling, task cleanup management, startup step orchestration, and discovered-file bootstrapping.
+
 ## 0.3.1
 
 - Normalized loggers inside direct requirement checks so apps can pass the standard Trebired logger shape.
