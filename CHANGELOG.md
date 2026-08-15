@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+- Normalized loggers inside direct requirement checks so apps can pass the standard Trebired logger shape.
+
 ## 0.3.0
 
 - Renamed public config types to package-local names such as `Config`, `NormalizedConfig`, and `PathRequirementConfig`.

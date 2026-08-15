@@ -7,6 +7,7 @@ import { ok, unavailable } from "@package/result";
 import { normalizeConfig } from "#config-normalize";
 import { STARTUP_LOG_GROUP } from "#constants";
 import { isPortInUse, parsePort, resolvePort } from "#ports";
+import { resolveLogger } from "#logging";
 import {
   matchesCondition,
   redactUrl,
@@ -18,19 +19,28 @@ import { checkValues } from "./requirement/values.js";
 import { toTrimmedString as toString } from "@trebired/utils";
 import type { NormalizedConfig, Config } from "#config-types";
 import type {
+  StartupLogger,
+  StartupLoggerAdapter,
   StartupRequirementContext,
   StartupRequirementData,
   StartupRequirementFailure,
   StartupRequirementsResult,
 } from "#types";
 
+type CheckRequirementsContext = Omit<StartupRequirementContext, "config"|"logger">& {
+  logger?: StartupLogger;
+  loggerAdapter?: StartupLoggerAdapter;
+};
+
 async function checkRequirements(
   config: NormalizedConfig | Config,
-  context: Omit<StartupRequirementContext, "config">,
+  context: CheckRequirementsContext,
 ): Promise<StartupRequirementsResult> {
+  const { logger, loggerAdapter, ...restContext } = context;
   const fullContext: StartupRequirementContext = {
-    ...context,
     config: normalizeConfig(config, { requireForVersion: true }),
+    logger: resolveLogger(logger, loggerAdapter),
+    ...restContext,
   };
   const failures = [
     ...checkRequiredEnv(fullContext),

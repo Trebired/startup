@@ -66,6 +66,14 @@ async function verifyRequirements() {
   assert.equal(okResult.data.ports.PORT, 3210);
   assert.ok(okLogs.some((event) => event.group === "trebired.startup.requirements"));
 
+  const standardLogs = [];
+  const standardResult = await checkRequirements(config, {
+      ...requirementContext({}, standardLogs),
+      logger: standardLogger(standardLogs),
+  });
+  assert.equal(standardResult.ok, true);
+  assert.ok(standardLogs.some((event) => event.level === "success"));
+
   const failed = await checkRequirements(config, requirementContext({ DATA_DIR: "" }));
   assert.equal(failed.ok, false);
   assert.ok(failed.data.failures.some((item) => item.status_code === "startup-env-missing"));
@@ -205,6 +213,16 @@ function captureLogger(logs) {
     fail: (group, message, metadata) => logs.push({ group, level: "fail", message, metadata }),
     info: (group, message, metadata) => logs.push({ group, level: "info", message, metadata }),
     log: (level, group, message, metadata) => logs.push({ group, level, message, metadata }),
+    warn: (group, message, metadata) => logs.push({ group, level: "warn", message, metadata }),
+  };
+}
+
+function standardLogger(logs) {
+  return {
+    error: (group, message, metadata) => logs.push({ group, level: "error", message, metadata }),
+    fail: (group, message, metadata) => logs.push({ group, level: "fail", message, metadata }),
+    info: (group, message, metadata) => logs.push({ group, level: "info", message, metadata }),
+    success: (group, message, metadata) => logs.push({ group, level: "success", message, metadata }),
     warn: (group, message, metadata) => logs.push({ group, level: "warn", message, metadata }),
   };
 }
