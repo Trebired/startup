@@ -31,7 +31,7 @@ async function resetTemp() {
 
 async function verifyConfigLoading() {
   const projectRoot = path.join(tempRoot, "config");
-  await writeStartupConfig(projectRoot, "0.1.99");
+  await writeStartupConfig(projectRoot, "0.2.99");
   const loaded = await loadConfig(projectRoot);
   assert.equal(loaded.config.product.name, "Verify");
 
@@ -60,25 +60,43 @@ async function writeRawConfig(projectRoot, source) {
 async function verifyRequirements() {
   const dirPath = path.join(tempRoot, "data");
   const config = requirementConfig(dirPath);
-  const okResult = await checkRequirements(config, requirementContext());
+  const okLogs = [];
+  const okResult = await checkRequirements(config, requirementContext({}, okLogs));
   assert.equal(okResult.ok, true);
   assert.equal(okResult.data.ports.PORT, 3210);
+  assert.ok(okLogs.some((event) => event.group === "trebired.startup.requirements"));
 
   const failed = await checkRequirements(config, requirementContext({ DATA_DIR: "" }));
   assert.equal(failed.ok, false);
   assert.ok(failed.data.failures.some((item) => item.status_code === "startup-env-missing"));
+
+  const invalidInstance = await checkRequirements(config, requirementContext({ INSTANCE: "D8AC90MWBCHR" }));
+  assert.equal(invalidInstance.ok, false);
+  assert.ok(invalidInstance.data.failures.some((item) => item.status_code === "startup-value-forbidden"));
+
+  const missingUrlPart = await checkRequirements(config, requirementContext({
+        DATABASE_URL: "postgres://localhost",
+  }));
+  assert.equal(missingUrlPart.ok, false);
+  assert.ok(missingUrlPart.data.failures.some((item) => item.status_code === "startup-url-part-missing"));
 }
 
 function requirementConfig(dirPath) {
   return {
-    forVersion: "0.1.99",
+    forVersion: "0.2.99",
     product: { name: "Verify", version: "9.9.9" },
     requirements: {
-      env: { required: ["DATA_DIR"] },
-      paths: [{ create: true, kind: "dir", path: dirPath, writable: true }],
+      env: { required: ["DATA_DIR", "INSTANCE"] },
+      paths: [
+        { create: true, kind: "dir", path: dirPath, writable: true },
+        { create: true, kind: "dir", path: "{env.DATA_DIR}/updates", writable: true },
+      ],
       postgres: [{ env: "DATABASE_URL", timeoutMs: 5, value: "postgres://localhost/db" }],
       ports: [{ defaultValue: 3210, env: "PORT" }],
-      urls: [{ protocols: ["postgres"], value: "postgres://localhost/db" }],
+      urls: [{ env: "DATABASE_URL", protocols: ["postgres"], requiredParts: ["hostname", "database", "username"] }],
+      values: [
+        { env: "INSTANCE", pattern: "^[A-Z0-9]{12}$", forbidden: ["D8AC90MWBCHR"] },
+      ],
     },
     lifecycle: { shutdownSignals: ["SIGINT"], shutdownTimeoutMs: 200 },
     messages: { welcome: { enabled: false } },
@@ -86,15 +104,17 @@ function requirementConfig(dirPath) {
   };
 }
 
-function requirementContext(env = {}) {
+function requirementContext(env = {}, logs = []) {
   return {
     cwd: tempRoot,
     env: {
+      DATABASE_URL: "postgres://user@localhost/db",
       DATA_DIR: path.join(tempRoot, "data"),
+      INSTANCE: "ABC123XYZ789",
       ...env,
     },
     isPortUsed: async() => false,
-    logger: captureLogger([]),
+    logger: captureLogger(logs),
     postgresConnector: async() => undefined,
   };
 }
@@ -128,7 +148,11 @@ async function verifyRuntime() {
   const complete = await runStartup({
       config: requirementConfig(path.join(tempRoot, "runtime-ok")),
       bootstrap: { subsystems: [{ id: "service", bootstrap() {} }] },
-      env: { DATA_DIR: path.join(tempRoot, "runtime-ok") },
+      env: {
+        DATABASE_URL: "postgres://user@localhost/db",
+        DATA_DIR: path.join(tempRoot, "runtime-ok"),
+        INSTANCE: "ABC123XYZ789",
+      },
       logger: captureLogger(logs),
       isPortUsed: async() => false,
       postgresConnector: async() => undefined,

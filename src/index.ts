@@ -49,8 +49,10 @@ export type {
   StartupPortRequirementConfig,
   StartupPostgresRequirementConfig,
   StartupProductConfig,
+  StartupRequirementConditionConfig,
   StartupRequirementsConfig,
   StartupUrlRequirementConfig,
+  StartupValueRequirementConfig,
 } from "./config/index.js";
 export type {
   NormalizedStartupLogger,

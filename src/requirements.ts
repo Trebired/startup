@@ -5,7 +5,16 @@ import path from "node:path";
 import { ok, unavailable } from "@package/result";
 
 import { normalizeConfig } from "#config-normalize";
+import { STARTUP_LOG_GROUP } from "#constants";
 import { isPortInUse, parsePort, resolvePort } from "#ports";
+import {
+  matchesCondition,
+  redactUrl,
+  renderRequirementTemplate,
+  resolvePortHost,
+  urlPartValue,
+} from "./requirement/helpers.js";
+import { checkValues } from "./requirement/values.js";
 import { toTrimmedString as toString } from "@trebired/utils";
 import type { NormalizedStartupConfig, StartupConfig } from "#config-types";
 import type {
@@ -25,6 +34,7 @@ async function checkRequirements(
   };
   const failures = [
     ...checkRequiredEnv(fullContext),
+    ...checkValues(fullContext),
     ...await checkPaths(fullContext),
     ...checkUrls(fullContext),
     ...await checkPorts(fullContext),
@@ -43,6 +53,7 @@ function checkRequiredEnv(context: StartupRequirementContext): StartupRequiremen
 async function checkPaths(context: StartupRequirementContext): Promise<StartupRequirementFailure[]> {
   const failures: StartupRequirementFailure[] = [];
   for (const requirement of context.config.requirements.paths) {
+    if (!matchesCondition(requirement.when, context)) continue;
     const target = resolvePathRequirement(requirement, context);
     if (!target) {
       failures.push(failure("path", "startup-path-missing", "Path requirement has no path", requirement));
@@ -59,7 +70,7 @@ function resolvePathRequirement(
   context: StartupRequirementContext,
 ): string {
   const envPath = requirement.env ? context.env[requirement.env] : "";
-  return toString(requirement.path || envPath);
+  return renderRequirementTemplate(toString(requirement.path || envPath), context);
 }
 
 async function checkPathTarget(
@@ -105,18 +116,30 @@ async function checkCustom(context: StartupRequirementContext): Promise<StartupR
 
 function checkUrls(context: StartupRequirementContext): StartupRequirementFailure[] {
   return context.config.requirements.urls.flatMap((requirement) => {
+      if (!matchesCondition(requirement.when, context)) return [];
       const value = toString(requirement.value || (requirement.env ? context.env[requirement.env] : ""));
       if (!value) return [failure("url", "startup-url-missing", "URL requirement has no value", requirement)];
-      return validateUrl(value, requirement.protocols);
+      return validateUrl(value, requirement.protocols, requirement.requiredParts);
   });
 }
 
-function validateUrl(value: string, protocols: string[]): StartupRequirementFailure[] {
+function validateUrl(
+  value: string,
+  protocols: string[],
+  requiredParts: string[],
+): StartupRequirementFailure[] {
   try {
     const url = new URL(value);
     const protocol = cleanProtocol(url.protocol);
     if (protocols.length > 0 && !protocols.includes(protocol)) {
       return [failure("url", "startup-url-protocol-invalid", "URL protocol is not allowed", { value })];
+    }
+    const missingPart = requiredParts.find((part) => !urlPartValue(url, part));
+    if (missingPart) {
+      return [failure("url", "startup-url-part-missing", `URL is missing ${missingPart}`, {
+            part: missingPart,
+            value: redactUrl(value),
+      })];
     }
     return [];
   } catch (error) {
@@ -127,12 +150,14 @@ function validateUrl(value: string, protocols: string[]): StartupRequirementFail
 async function checkPorts(context: StartupRequirementContext): Promise<StartupRequirementFailure[]> {
   const failures: StartupRequirementFailure[] = [];
   for (const requirement of context.config.requirements.ports) {
+    if (!matchesCondition(requirement.when, context)) continue;
     try {
       const port = resolvePort(requirement, context.env);
+      const host = resolvePortHost(requirement, context);
       if (requirement.checkAvailable === false) continue;
       const occupied = context.isPortUsed
-      ? await context.isPortUsed(port, requirement.host)
-      : await isPortInUse(port, requirement.host);
+      ? await context.isPortUsed(port, host)
+      : await isPortInUse(port, host);
       if (occupied) failures.push(failure("port", "startup-port-occupied", "Port is already in use", { value: port }));
     } catch (error) {
       failures.push(failure("port", "startup-port-invalid", "Port requirement failed", { error }));
@@ -144,6 +169,7 @@ async function checkPorts(context: StartupRequirementContext): Promise<StartupRe
 async function checkPostgres(context: StartupRequirementContext): Promise<StartupRequirementFailure[]> {
   const failures: StartupRequirementFailure[] = [];
   for (const requirement of context.config.requirements.postgres) {
+    if (!matchesCondition(requirement.when, context)) continue;
     const connectionString = toString(requirement.value || context.env[requirement.env]);
     if (!connectionString) {
       failures.push(failure("postgres", "startup-postgres-url-missing", "PostgreSQL URL is missing", requirement));
@@ -200,10 +226,10 @@ function requirementResult(
 ): StartupRequirementsResult {
   const data = { failures, ports: collectPorts(context) };
   if (failures.length === 0) {
-    context.logger.log("success", "requirements", "requirements:ok", { ports: data.ports });
+    context.logger.log("success", requirementLogGroup(), "requirements:ok", { ports: data.ports });
     return ok<StartupRequirementData>("startup-requirements-ok", { data, message: false });
   }
-  context.logger.fail("requirements", "requirements:failed", { failures });
+  context.logger.fail(requirementLogGroup(), "requirements:failed", { failures });
   return unavailable<StartupRequirementData>("startup-requirements-failed", { data, message: false });
 }
 
@@ -218,6 +244,18 @@ function collectPorts(context: StartupRequirementContext): Record<string, number
     }
   }
   return ports;
+}
+
+function resolveRequirementValue(
+  requirement: NormalizedStartupConfig["requirements"]["values"][number],
+  context: StartupRequirementContext,
+): string {
+  const raw = requirement.value ?? (requirement.env ? context.env[requirement.env] : "");
+  return renderRequirementTemplate(toString(raw), context);
+}
+
+function requirementLogGroup(): string {
+  return `${STARTUP_LOG_GROUP}.requirements`;
 }
 
 function failure(

@@ -24,6 +24,7 @@ type StartupRequirementFailure = {
   status_code: string;
   message: string;
   key?: string;
+  part?: string;
   path?: string;
   value?: unknown;
   error?: unknown;

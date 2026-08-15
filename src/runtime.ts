@@ -4,6 +4,7 @@ import {
 } from "@package/bootstrap";
 import { noop, ok, unavailable } from "@package/result";
 
+import { STARTUP_LOG_GROUP } from "#constants";
 import { loadConfig, normalizeConfig } from "#config";
 import { resolveLogger } from "#logging";
 import { emitStartupMessage } from "#messages";
@@ -173,9 +174,9 @@ async function runBootstrap(
   context: StartupContext,
 ): Promise<BootstrapRunReport> {
   const started = Date.now();
-  context.logger.info("runtime", "bootstrap:start");
+  context.logger.info(`${STARTUP_LOG_GROUP}.runtime`, "bootstrap:start");
   const report = await handle.runtime.bootstrap();
-  context.logger.info("runtime", "bootstrap:finish", {
+  context.logger.info(`${STARTUP_LOG_GROUP}.runtime`, "bootstrap:finish", {
       took_ms: Date.now() - started,
   });
   return report;

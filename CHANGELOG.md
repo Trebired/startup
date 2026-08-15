@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Added generic value validators, path templates, URL required part checks, and port host env support for startup requirements.
+- Moved startup requirement, message, and runtime logs under explicit package-owned log groups.
+- Updated direct package dependencies to current Trebired versions.
+
 ## 0.1.3
 
 - Updated shared utilities to `@trebired/utils@^0.4.4`.

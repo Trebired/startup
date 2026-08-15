@@ -10,24 +10,48 @@ type StartupEnvRequirementsConfig = {
   required?: string[] | string;
 };
 
+type StartupRequirementConditionConfig = {
+  env?: string;
+  equals?: string | string[];
+  notEquals?: string | string[];
+  exists?: boolean;
+};
+
+type StartupValueRequirementConfig = {
+  env?: string;
+  value?: string | number | boolean;
+  required?: boolean;
+  allowed?: string[] | string;
+  forbidden?: string[] | string;
+  pattern?: string;
+  notPattern?: string;
+  statusCode?: string;
+  message?: string;
+  when?: StartupRequirementConditionConfig;
+};
+
 type StartupPathRequirementConfig = {
   env?: string;
   path?: string;
   kind?: "dir" | "file";
   create?: boolean;
   writable?: boolean;
+  when?: StartupRequirementConditionConfig;
 };
 
 type StartupUrlRequirementConfig = {
   env?: string;
   value?: string;
   protocols?: string[] | string;
+  requiredParts?: string[] | string;
+  when?: StartupRequirementConditionConfig;
 };
 
 type StartupPostgresRequirementConfig = {
   env?: string;
   value?: string;
   timeoutMs?: number;
+  when?: StartupRequirementConditionConfig;
 };
 
 type StartupPortRequirementConfig = {
@@ -35,11 +59,14 @@ type StartupPortRequirementConfig = {
   value?: number | string;
   defaultValue?: number | string;
   host?: string;
+  hostEnv?: string;
   checkAvailable?: boolean;
+  when?: StartupRequirementConditionConfig;
 };
 
 type StartupRequirementsConfig = {
   env?: StartupEnvRequirementsConfig;
+  values?: StartupValueRequirementConfig[];
   paths?: StartupPathRequirementConfig[];
   urls?: StartupUrlRequirementConfig[];
   postgres?: StartupPostgresRequirementConfig[];
@@ -83,8 +110,12 @@ type NormalizedStartupConfig = {
     env: {
       required: string[];
     };
+    values: StartupValueRequirementConfig[];
     paths: StartupPathRequirementConfig[];
-    urls: Array<StartupUrlRequirementConfig&{protocols:string[]}>;
+    urls: Array<StartupUrlRequirementConfig& {
+      protocols: string[];
+      requiredParts: string[];
+    }>;
     postgres: Required<StartupPostgresRequirementConfig>[];
     ports: StartupPortRequirementConfig[];
   };
@@ -122,6 +153,8 @@ export type {
   StartupPortRequirementConfig,
   StartupPostgresRequirementConfig,
   StartupProductConfig,
+  StartupRequirementConditionConfig,
   StartupRequirementsConfig,
   StartupUrlRequirementConfig,
+  StartupValueRequirementConfig,
 };

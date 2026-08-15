@@ -17,7 +17,9 @@ import type {
   StartupPathRequirementConfig,
   StartupPortRequirementConfig,
   StartupPostgresRequirementConfig,
+  StartupRequirementConditionConfig,
   StartupUrlRequirementConfig,
+  StartupValueRequirementConfig,
 } from "./types.js";
 import type { StartupLogLevel } from "#types";
 
@@ -85,11 +87,27 @@ function normalizeRequirements(input: StartupConfig["requirements"]) {
     env: {
       required: uniqueStrings(isRecord(value.env) ? value.env.required : []),
     },
+    values: normalizeValueRequirements(value.values),
     paths: normalizePathRequirements(value.paths),
     urls: normalizeUrlRequirements(value.urls),
     postgres: normalizePostgresRequirements(value.postgres),
     ports: normalizePortRequirements(value.ports),
   };
+}
+
+function normalizeValueRequirements(input: unknown): StartupValueRequirementConfig[] {
+  return normalizeArray(input).map((item) => compactRecord({
+        allowed: uniqueStrings(item.allowed),
+        env: toString(item.env) || undefined,
+        forbidden: uniqueStrings(item.forbidden),
+        message: toString(item.message) || undefined,
+        notPattern: toString(item.notPattern) || undefined,
+        pattern: toString(item.pattern) || undefined,
+        required: item.required === false ? false : undefined,
+        statusCode: toString(item.statusCode) || undefined,
+        value: normalizeValueRequirementLiteral(item.value),
+        when: normalizeCondition(item.when),
+    }) as StartupValueRequirementConfig);
 }
 
 function normalizePathRequirements(input: unknown): StartupPathRequirementConfig[] {
@@ -98,15 +116,19 @@ function normalizePathRequirements(input: unknown): StartupPathRequirementConfig
         env: toString(item.env) || undefined,
         kind: item.kind === "file" ? "file" : "dir",
         path: toString(item.path) || undefined,
+        when: normalizeCondition(item.when),
         writable: item.writable === true,
     }) as StartupPathRequirementConfig);
 }
 
 function normalizeUrlRequirements(input: unknown) {
-  return normalizeArray(input).map((item): StartupUrlRequirementConfig& { protocols: string[] } => ({
+  return normalizeArray(input).map((item): StartupUrlRequirementConfig& { protocols: string[]; requiredParts: string[] } => ({
         env: toString(item.env) || undefined,
         value: toString(item.value) || undefined,
         protocols: uniqueStrings(item.protocols).map(cleanProtocol),
+        requiredParts: uniqueStrings(item.requiredParts).map((part) =>
+          toString(part).toLowerCase()),
+        when: normalizeCondition(item.when),
   }));
 }
 
@@ -115,6 +137,7 @@ function normalizePostgresRequirements(input: unknown) {
         env: toString(item.env),
         value: toString(item.value),
         timeoutMs: normalizeNumber(item.timeoutMs, 3000),
+        when: normalizeCondition(item.when) as StartupRequirementConditionConfig,
   }));
 }
 
@@ -127,13 +150,37 @@ function normalizePortRequirements(input: unknown): StartupPortRequirementConfig
           defaultValue,
           env: toString(item.env) || undefined,
           host: toString(item.host) || undefined,
+          hostEnv: toString(item.hostEnv) || undefined,
           value,
+          when: normalizeCondition(item.when),
       }) as StartupPortRequirementConfig;
   });
 }
 
+function normalizeValueRequirementLiteral(value: unknown): string | number | boolean | undefined {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+  ? value
+  : undefined;
+}
+
 function normalizePortValue(value: unknown): number | string | undefined {
   return typeof value === "number" || typeof value === "string" ? value : undefined;
+}
+
+function normalizeCondition(input: unknown): StartupRequirementConditionConfig | undefined {
+  if (!isRecord(input)) return undefined;
+  return compactRecord({
+      env: toString(input.env) || undefined,
+      equals: normalizeConditionValues(input.equals),
+      exists: typeof input.exists === "boolean" ? input.exists : undefined,
+      notEquals: normalizeConditionValues(input.notEquals),
+  }) as StartupRequirementConditionConfig;
+}
+
+function normalizeConditionValues(input: unknown): string[] | string | undefined {
+  const values = uniqueStrings(input);
+  if (values.length === 0) return undefined;
+  return values.length === 1 ? values[0] : values;
 }
 
 function normalizeLifecycle(input: StartupLifecycleConfig | undefined) {

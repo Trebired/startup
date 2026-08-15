@@ -25,6 +25,8 @@ export type {
   StartupPortRequirementConfig,
   StartupPostgresRequirementConfig,
   StartupProductConfig,
+  StartupRequirementConditionConfig,
   StartupRequirementsConfig,
   StartupUrlRequirementConfig,
+  StartupValueRequirementConfig,
 } from "./types.js";

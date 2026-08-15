@@ -1,3 +1,5 @@
+import { STARTUP_LOG_GROUP } from "#constants";
+
 function formatStartupDuration(ms: unknown): string {
   const totalMs =
   Number.isFinite(ms as number) && Number(ms) >= 0
@@ -19,7 +21,7 @@ function startupMark(
 ) {
   const started = Date.now();
   return function done(extra: Record<string, unknown> = {}) {
-    logger.info?.("runtime", label, {
+    logger.info?.(`${STARTUP_LOG_GROUP}.runtime`, label, {
         took_ms: Date.now() - started,
         ...extra,
     });

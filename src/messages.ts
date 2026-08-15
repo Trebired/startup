@@ -1,4 +1,5 @@
 import { formatStartupDuration } from "#time";
+import { STARTUP_LOG_GROUP } from "#constants";
 import {
   isRecord,
   toTrimmedString as toString,
@@ -27,7 +28,7 @@ function emitStartupMessage(
     ...runtimeMetadata(templateData),
   };
   for (const text of message.text) {
-    context.logger.log(message.level, "messages", renderTemplate(text, templateData), metadata);
+    context.logger.log(message.level, `${STARTUP_LOG_GROUP}.messages`, renderTemplate(text, templateData), metadata);
   }
 }
 
