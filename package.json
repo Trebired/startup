@@ -1,0 +1,87 @@
+{
+  "name": "@trebired/startup",
+  "version": "0.1.0",
+  "description": "Generic Trebired application startup shell with config loading, preflight requirements, lifecycle glue, shutdown binding, and startup messages.",
+  "type": "module",
+  "private": false,
+  "license": "MIT",
+  "author": "Miroslav Machynka (Trebired)",
+  "config": {
+    "organization": {
+      "name": "trebired"
+    }
+  },
+  "packageManager": "bun@1.3.12",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./config": {
+      "import": "./dist/config/index.js",
+      "types": "./dist/config/index.d.ts"
+    }
+  },
+  "files": [
+    ".trebired/logger/config.ts",
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun run prepare:generated && rm -rf dist && tsc -p tsconfig.build.json && bun ./scripts/prepare-dist.mjs prepare-dist",
+    "postpack": "bun ./scripts/prepare-dist.mjs postpack",
+    "prepack": "bun run build && bun ./scripts/prepare-dist.mjs prepack",
+    "prepublishOnly": "bun run typecheck && bun run build && bun run verify:runtime && bun run verify:pack",
+    "prepare:generated": "bun ./scripts/build/generated/tsconfig.mjs",
+    "typecheck": "bun run prepare:generated && tsc --noEmit",
+    "verify:pack": "bun ./scripts/verify/pack.mjs",
+    "verify:runtime": "bun ./scripts/verify/runtime.mjs"
+  },
+  "dependencies": {
+    "@package/bootstrap": "npm:@trebired/bootstrap@^2.2.0",
+    "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.11",
+    "@package/result": "npm:@trebired/result@^1.2.1"
+  },
+  "devDependencies": {
+    "@trebired/code-discipline": "^6.1.0",
+    "@trebired/configs": "^0.1.5",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^24.13.3",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "pg": ">=8"
+  },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "startup",
+    "requirements",
+    "preflight",
+    "lifecycle",
+    "shutdown",
+    "backend",
+    "bun"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Trebired/startup"
+  },
+  "homepage": "https://github.com/Trebired/startup#readme",
+  "bugs": {
+    "url": "https://github.com/Trebired/startup/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
