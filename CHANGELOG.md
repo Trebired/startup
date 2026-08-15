@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Updated shared utilities to `@trebired/utils@^0.4.4`.
+
 All notable package changes are documented here.
 
 ## 0.1.2
