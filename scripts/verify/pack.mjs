@@ -10,6 +10,7 @@ const packageJsonBackupPath = path.join(rootDir, ".tmp", "package.json.backup");
 const bootstrapDir = path.join(rootDir, "..", "bootstrap");
 const loggerAdapterDir = path.join(rootDir, "..", "logger-adapter");
 const resultDir = path.join(rootDir, "..", "result");
+const utilsDir = path.join(rootDir, "..", "utils");
 const nodeTypesDir = path.join(rootDir, "node_modules", "@types", "node");
 const tscBin = path.join(rootDir, "node_modules", "typescript", "bin", "tsc");
 
@@ -116,6 +117,7 @@ async function writeConsumerPackageJson(consumerDir, tarballPath) {
           "@package/bootstrap": `file:${bootstrapDir}`,
           "@package/logger-adapter": `file:${loggerAdapterDir}`,
           "@package/result": `file:${resultDir}`,
+          "@trebired/utils": `file:${utilsDir}`,
           "@trebired/startup": `file:${tarballPath}`,
         },
         devDependencies: {

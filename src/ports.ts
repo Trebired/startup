@@ -1,6 +1,9 @@
 import net from "node:net";
 
-import { toNumber, toString } from "#values";
+import {
+  toNumber,
+  toTrimmedString as toString,
+} from "@trebired/utils";
 import type { NormalizedStartupConfig, StartupPortRequirementConfig } from "#config-types";
 import type { StartupEnv } from "#types";
 

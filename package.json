@@ -1,6 +1,6 @@
 {
   "name": "@trebired/startup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generic Trebired application startup shell with config loading, preflight requirements, lifecycle glue, shutdown binding, and startup messages.",
   "type": "module",
   "private": false,
@@ -47,7 +47,8 @@
   "dependencies": {
     "@package/bootstrap": "npm:@trebired/bootstrap@^2.2.0",
     "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.11",
-    "@package/result": "npm:@trebired/result@^1.2.1"
+    "@package/result": "npm:@trebired/result@^1.2.1",
+    "@trebired/utils": "^0.4.3"
   },
   "devDependencies": {
     "@trebired/code-discipline": "^6.1.0",

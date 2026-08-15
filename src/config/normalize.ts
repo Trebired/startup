@@ -1,13 +1,12 @@
 import { DEFAULT_SHUTDOWN_SIGNALS } from "#constants";
-import { assertCompatibleForVersion } from "#version";
 import {
-  cleanProtocol,
+  compactRecord,
   isRecord,
-  pickDefined,
   toNumber,
-  toString,
-  uniqueStrings,
-} from "#values";
+  toTrimmedString as toString,
+  uniqueStrings as uniqueArrayStrings,
+} from "@trebired/utils";
+import { resolveForVersion } from "@trebired/utils";
 import { PACKAGE_VERSION } from "#metadata";
 import type {
   NormalizedStartupConfig,
@@ -64,13 +63,13 @@ function normalizeForVersion(
   config: StartupConfig,
   options: NormalizeOptions,
 ): string {
-  const forVersion = toString(config.forVersion);
-  if (!forVersion && options.requireForVersion !== false) {
-    throw new Error(`startup config is missing forVersion: ${options.configPath || "inline"}`);
-  }
-  const resolved = forVersion || PACKAGE_VERSION;
-  assertCompatibleForVersion(resolved, options.configPath || "inline");
-  return resolved;
+  return resolveForVersion({
+      configPath: options.configPath,
+      forVersion: config.forVersion,
+      label: "startup",
+      packageVersion: PACKAGE_VERSION,
+      requireForVersion: options.requireForVersion,
+  });
 }
 
 function normalizeProduct(input: StartupConfig["product"]) {
@@ -94,13 +93,13 @@ function normalizeRequirements(input: StartupConfig["requirements"]) {
 }
 
 function normalizePathRequirements(input: unknown): StartupPathRequirementConfig[] {
-  return normalizeArray(input).map((item) => pickDefined({
+  return normalizeArray(input).map((item) => compactRecord({
         create: item.create === true,
         env: toString(item.env) || undefined,
         kind: item.kind === "file" ? "file" : "dir",
         path: toString(item.path) || undefined,
         writable: item.writable === true,
-  }));
+    }) as StartupPathRequirementConfig);
 }
 
 function normalizeUrlRequirements(input: unknown) {
@@ -115,7 +114,7 @@ function normalizePostgresRequirements(input: unknown) {
   return normalizeArray(input).map((item): Required<StartupPostgresRequirementConfig> => ({
         env: toString(item.env),
         value: toString(item.value),
-        timeoutMs: toNumber(item.timeoutMs) ?? 3000,
+        timeoutMs: normalizeNumber(item.timeoutMs, 3000),
   }));
 }
 
@@ -123,7 +122,7 @@ function normalizePortRequirements(input: unknown): StartupPortRequirementConfig
   return normalizeArray(input).map((item): StartupPortRequirementConfig => {
       const value = normalizePortValue(item.value);
       const defaultValue = normalizePortValue(item.defaultValue);
-      return pickDefined({
+      return compactRecord({
           checkAvailable: item.checkAvailable === false ? false : undefined,
           defaultValue,
           env: toString(item.env) || undefined,
@@ -138,11 +137,12 @@ function normalizePortValue(value: unknown): number | string | undefined {
 }
 
 function normalizeLifecycle(input: StartupLifecycleConfig | undefined) {
+  const shutdownSignals = uniqueStrings(input?.shutdownSignals);
   return {
-    shutdownSignals: uniqueStrings(input?.shutdownSignals).length > 0
-    ? uniqueStrings(input?.shutdownSignals)
+    shutdownSignals: shutdownSignals.length > 0
+    ? shutdownSignals
     : Array.from(DEFAULT_SHUTDOWN_SIGNALS),
-    shutdownTimeoutMs: toNumber(input?.shutdownTimeoutMs) ?? 8000,
+    shutdownTimeoutMs: normalizeNumber(input?.shutdownTimeoutMs, 8000),
   };
 }
 
@@ -175,6 +175,20 @@ function normalizeLevel(level: unknown): StartupLogLevel {
 
 function normalizeArray(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function normalizeNumber(value: unknown, fallback: number): number {
+  const number = toNumber(value, Number.NaN);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function uniqueStrings(value: unknown): string[] {
+  const values = Array.isArray(value) ? value : typeof value === "string" ? [value] : [];
+  return uniqueArrayStrings(values);
+}
+
+function cleanProtocol(value: unknown): string {
+  return toString(value).toLowerCase().replace(/:$/u, "");
 }
 
 export {

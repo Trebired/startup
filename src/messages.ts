@@ -1,5 +1,8 @@
 import { formatStartupDuration } from "#time";
-import { isRecord, toString } from "#values";
+import {
+  isRecord,
+  toTrimmedString as toString,
+} from "@trebired/utils";
 import type { NormalizedStartupConfig } from "#config-types";
 import type {
   NormalizedStartupLogger,

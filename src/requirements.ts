@@ -6,7 +6,7 @@ import { ok, unavailable } from "@package/result";
 
 import { normalizeConfig } from "#config-normalize";
 import { isPortInUse, parsePort, resolvePort } from "#ports";
-import { cleanProtocol, toString } from "#values";
+import { toTrimmedString as toString } from "@trebired/utils";
 import type { NormalizedStartupConfig, StartupConfig } from "#config-types";
 import type {
   StartupRequirementContext,
@@ -227,6 +227,10 @@ function failure(
   extra: Partial<StartupRequirementFailure> = {},
 ): StartupRequirementFailure {
   return { check, status_code, message, ...extra };
+}
+
+function cleanProtocol(value: unknown): string {
+  return toString(value).toLowerCase().replace(/:$/u, "");
 }
 
 export {
