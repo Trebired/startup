@@ -31,7 +31,7 @@ async function resetTemp() {
 
 async function verifyConfigLoading() {
   const projectRoot = path.join(tempRoot, "config");
-  await writeStartupConfig(projectRoot, "0.2.99");
+  await writeStartupConfig(projectRoot, "0.3.99");
   const loaded = await loadConfig(projectRoot);
   assert.equal(loaded.config.product.name, "Verify");
 
@@ -83,7 +83,7 @@ async function verifyRequirements() {
 
 function requirementConfig(dirPath) {
   return {
-    forVersion: "0.2.99",
+    forVersion: "0.3.99",
     product: { name: "Verify", version: "9.9.9" },
     requirements: {
       env: { required: ["DATA_DIR", "INSTANCE"] },

@@ -9,17 +9,17 @@ import {
 import { resolveForVersion } from "@trebired/utils";
 import { PACKAGE_VERSION } from "#metadata";
 import type {
-  NormalizedStartupConfig,
-  StartupConfig,
-  StartupLifecycleConfig,
-  StartupMessageConfig,
-  StartupMessagesConfig,
-  StartupPathRequirementConfig,
-  StartupPortRequirementConfig,
-  StartupPostgresRequirementConfig,
-  StartupRequirementConditionConfig,
-  StartupUrlRequirementConfig,
-  StartupValueRequirementConfig,
+  NormalizedConfig,
+  Config,
+  LifecycleConfig,
+  MessageConfig,
+  MessagesConfig,
+  PathRequirementConfig,
+  PortRequirementConfig,
+  PostgresRequirementConfig,
+  RequirementConditionConfig,
+  UrlRequirementConfig,
+  ValueRequirementConfig,
 } from "./types.js";
 import type { StartupLogLevel } from "#types";
 
@@ -28,7 +28,7 @@ type NormalizeOptions = {
   requireForVersion?: boolean;
 };
 
-const DEFAULT_MESSAGES: StartupMessagesConfig = {
+const DEFAULT_MESSAGES: MessagesConfig = {
   ready: {
     enabled: true,
     level: "success",
@@ -41,14 +41,14 @@ const DEFAULT_MESSAGES: StartupMessagesConfig = {
   },
 };
 
-function defineConfig<TConfig extends StartupConfig>(config: TConfig): TConfig {
+function defineConfig<TConfig extends Config>(config: TConfig): TConfig {
   return config;
 }
 
 function normalizeConfig(
-  config: StartupConfig = {},
+  config: Config = {},
   options: NormalizeOptions = {},
-): NormalizedStartupConfig {
+): NormalizedConfig {
   if (!isRecord(config)) throw new Error("startup config must be an object");
   const forVersion = normalizeForVersion(config, options);
   return {
@@ -62,7 +62,7 @@ function normalizeConfig(
 }
 
 function normalizeForVersion(
-  config: StartupConfig,
+  config: Config,
   options: NormalizeOptions,
 ): string {
   return resolveForVersion({
@@ -74,14 +74,14 @@ function normalizeForVersion(
   });
 }
 
-function normalizeProduct(input: StartupConfig["product"]) {
+function normalizeProduct(input: Config["product"]) {
   return {
     name: toString(input?.name) || "App",
     version: toString(input?.version) || "0.1.0",
   };
 }
 
-function normalizeRequirements(input: StartupConfig["requirements"]) {
+function normalizeRequirements(input: Config["requirements"]) {
   const value = isRecord(input) ? input : {};
   return {
     env: {
@@ -95,7 +95,7 @@ function normalizeRequirements(input: StartupConfig["requirements"]) {
   };
 }
 
-function normalizeValueRequirements(input: unknown): StartupValueRequirementConfig[] {
+function normalizeValueRequirements(input: unknown): ValueRequirementConfig[] {
   return normalizeArray(input).map((item) => compactRecord({
         allowed: uniqueStrings(item.allowed),
         env: toString(item.env) || undefined,
@@ -107,10 +107,10 @@ function normalizeValueRequirements(input: unknown): StartupValueRequirementConf
         statusCode: toString(item.statusCode) || undefined,
         value: normalizeValueRequirementLiteral(item.value),
         when: normalizeCondition(item.when),
-    }) as StartupValueRequirementConfig);
+    }) as ValueRequirementConfig);
 }
 
-function normalizePathRequirements(input: unknown): StartupPathRequirementConfig[] {
+function normalizePathRequirements(input: unknown): PathRequirementConfig[] {
   return normalizeArray(input).map((item) => compactRecord({
         create: item.create === true,
         env: toString(item.env) || undefined,
@@ -118,11 +118,11 @@ function normalizePathRequirements(input: unknown): StartupPathRequirementConfig
         path: toString(item.path) || undefined,
         when: normalizeCondition(item.when),
         writable: item.writable === true,
-    }) as StartupPathRequirementConfig);
+    }) as PathRequirementConfig);
 }
 
 function normalizeUrlRequirements(input: unknown) {
-  return normalizeArray(input).map((item): StartupUrlRequirementConfig& { protocols: string[]; requiredParts: string[] } => ({
+  return normalizeArray(input).map((item): UrlRequirementConfig& { protocols: string[]; requiredParts: string[] } => ({
         env: toString(item.env) || undefined,
         value: toString(item.value) || undefined,
         protocols: uniqueStrings(item.protocols).map(cleanProtocol),
@@ -133,16 +133,16 @@ function normalizeUrlRequirements(input: unknown) {
 }
 
 function normalizePostgresRequirements(input: unknown) {
-  return normalizeArray(input).map((item): Required<StartupPostgresRequirementConfig> => ({
+  return normalizeArray(input).map((item): Required<PostgresRequirementConfig> => ({
         env: toString(item.env),
         value: toString(item.value),
         timeoutMs: normalizeNumber(item.timeoutMs, 3000),
-        when: normalizeCondition(item.when) as StartupRequirementConditionConfig,
+        when: normalizeCondition(item.when) as RequirementConditionConfig,
   }));
 }
 
-function normalizePortRequirements(input: unknown): StartupPortRequirementConfig[] {
-  return normalizeArray(input).map((item): StartupPortRequirementConfig => {
+function normalizePortRequirements(input: unknown): PortRequirementConfig[] {
+  return normalizeArray(input).map((item): PortRequirementConfig => {
       const value = normalizePortValue(item.value);
       const defaultValue = normalizePortValue(item.defaultValue);
       return compactRecord({
@@ -153,7 +153,7 @@ function normalizePortRequirements(input: unknown): StartupPortRequirementConfig
           hostEnv: toString(item.hostEnv) || undefined,
           value,
           when: normalizeCondition(item.when),
-      }) as StartupPortRequirementConfig;
+      }) as PortRequirementConfig;
   });
 }
 
@@ -167,14 +167,14 @@ function normalizePortValue(value: unknown): number | string | undefined {
   return typeof value === "number" || typeof value === "string" ? value : undefined;
 }
 
-function normalizeCondition(input: unknown): StartupRequirementConditionConfig | undefined {
+function normalizeCondition(input: unknown): RequirementConditionConfig | undefined {
   if (!isRecord(input)) return undefined;
   return compactRecord({
       env: toString(input.env) || undefined,
       equals: normalizeConditionValues(input.equals),
       exists: typeof input.exists === "boolean" ? input.exists : undefined,
       notEquals: normalizeConditionValues(input.notEquals),
-  }) as StartupRequirementConditionConfig;
+  }) as RequirementConditionConfig;
 }
 
 function normalizeConditionValues(input: unknown): string[] | string | undefined {
@@ -183,7 +183,7 @@ function normalizeConditionValues(input: unknown): string[] | string | undefined
   return values.length === 1 ? values[0] : values;
 }
 
-function normalizeLifecycle(input: StartupLifecycleConfig | undefined) {
+function normalizeLifecycle(input: LifecycleConfig | undefined) {
   const shutdownSignals = uniqueStrings(input?.shutdownSignals);
   return {
     shutdownSignals: shutdownSignals.length > 0
@@ -193,8 +193,8 @@ function normalizeLifecycle(input: StartupLifecycleConfig | undefined) {
   };
 }
 
-function normalizeMessages(input: StartupMessagesConfig | undefined) {
-  const messages: NormalizedStartupConfig["messages"] = {};
+function normalizeMessages(input: MessagesConfig | undefined) {
+  const messages: NormalizedConfig["messages"] = {};
   const merged = { ...DEFAULT_MESSAGES, ...(isRecord(input) ? input : {}) };
   for (const [key, value] of Object.entries(merged)) {
     if (!isRecord(value)) continue;
@@ -203,7 +203,7 @@ function normalizeMessages(input: StartupMessagesConfig | undefined) {
   return messages;
 }
 
-function normalizeMessage(input: StartupMessageConfig) {
+function normalizeMessage(input: MessageConfig) {
   return {
     enabled: input.enabled !== false,
     level: normalizeLevel(input.level),

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+- Renamed public config types to package-local names such as `Config`, `NormalizedConfig`, and `PathRequirementConfig`.
+
 ## 0.2.0
 
 - Added generic value validators, path templates, URL required part checks, and port host env support for startup requirements.

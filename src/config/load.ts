@@ -6,9 +6,9 @@ import { pathToFileURL } from "node:url";
 import { STARTUP_PROJECT_CONFIG_PATH } from "#constants";
 import { PACKAGE_VERSION } from "#metadata";
 import type {
-  LoadedStartupConfig,
-  LoadStartupConfigOptions,
-  StartupConfig,
+  LoadedConfig,
+  LoadConfigOptions,
+  Config,
 } from "./types.js";
 import { defineConfig, normalizeConfig } from "./normalize.js";
 
@@ -17,12 +17,12 @@ const EMPTY_CONFIG = Object.freeze(normalizeConfig(
     { requireForVersion: false },
 ));
 
-let cachedConfigs = new Map<string, LoadedStartupConfig>();
+let cachedConfigs = new Map<string, LoadedConfig>();
 
 async function loadConfig(
   projectRoot = process.cwd(),
-  options: LoadStartupConfigOptions = {},
-): Promise<LoadedStartupConfig> {
+  options: LoadConfigOptions = {},
+): Promise<LoadedConfig> {
   const root = path.resolve(projectRoot);
   const configPath = options.configPath
   ? path.resolve(root, options.configPath)
@@ -35,8 +35,8 @@ async function loadConfig(
 
 function loadConfigSync(
   projectRoot = process.cwd(),
-  options: LoadStartupConfigOptions = {},
-): LoadedStartupConfig {
+  options: LoadConfigOptions = {},
+): LoadedConfig {
   const root = path.resolve(projectRoot);
   const configPath = options.configPath
   ? path.resolve(root, options.configPath)
@@ -47,7 +47,7 @@ function loadConfigSync(
   return loadedConfig(configPath, readSourceConfig(source, configPath));
 }
 
-function loadCachedConfigSync(projectRoot = process.cwd()): LoadedStartupConfig["config"] {
+function loadCachedConfigSync(projectRoot = process.cwd()): LoadedConfig["config"] {
   const root = path.resolve(projectRoot);
   const configPath = findConfigSync(root);
   const cacheKey = configPath || `missing:${root}`;
@@ -59,7 +59,7 @@ function loadCachedConfigSync(projectRoot = process.cwd()): LoadedStartupConfig[
 }
 
 function resetConfigCacheForTests(): void {
-  cachedConfigs = new Map<string, LoadedStartupConfig>();
+  cachedConfigs = new Map<string, LoadedConfig>();
 }
 
 async function findConfig(startDir = process.cwd(), boundaryDir?: string): Promise<string|null> {
@@ -97,16 +97,16 @@ async function pathExists(filePath: string): Promise<boolean> {
   }
 }
 
-function handleMissingConfig(options: LoadStartupConfigOptions): LoadedStartupConfig {
+function handleMissingConfig(options: LoadConfigOptions): LoadedConfig {
   if (options.defaultIfMissing === false) throw new Error("startup config was not found");
   return missingConfig();
 }
 
-function missingConfig(): LoadedStartupConfig {
+function missingConfig(): LoadedConfig {
   return { config: EMPTY_CONFIG, configPath: null, dependencies: [] };
 }
 
-function loadedConfig(configPath: string, config: StartupConfig): LoadedStartupConfig {
+function loadedConfig(configPath: string, config: Config): LoadedConfig {
   return {
     config: normalizeConfig(config, { configPath, requireForVersion: true }),
     configPath,
@@ -114,12 +114,12 @@ function loadedConfig(configPath: string, config: StartupConfig): LoadedStartupC
   };
 }
 
-function readSourceConfig(source: string, configPath: string): StartupConfig {
+function readSourceConfig(source: string, configPath: string): Config {
   const candidate = runConfigSource(source, configPath);
   if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
     throw new Error(`startup config must default-export an object: ${configPath}`);
   }
-  return candidate as StartupConfig;
+  return candidate as Config;
 }
 
 function runConfigSource(source: string, configPath: string): unknown {

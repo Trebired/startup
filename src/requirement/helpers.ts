@@ -1,12 +1,12 @@
 import { toTrimmedString as toString } from "@trebired/utils";
 import type {
-  StartupPortRequirementConfig,
-  StartupRequirementConditionConfig,
+  PortRequirementConfig,
+  RequirementConditionConfig,
 } from "#config-types";
 import type { StartupRequirementContext } from "#types";
 
 function matchesCondition(
-  condition: StartupRequirementConditionConfig | undefined,
+  condition: RequirementConditionConfig | undefined,
   context: StartupRequirementContext,
 ): boolean {
   if (!condition) return true;
@@ -34,7 +34,7 @@ function renderRequirementTemplate(
 }
 
 function resolvePortHost(
-  requirement: StartupPortRequirementConfig,
+  requirement: PortRequirementConfig,
   context: StartupRequirementContext,
 ): string | undefined {
   return toString(requirement.host || (requirement.hostEnv ? context.env[requirement.hostEnv] : "")) || undefined;

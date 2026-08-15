@@ -1,23 +1,23 @@
 import type { BootstrapOptions } from "@package/bootstrap";
 import type { StartupLogLevel } from "#types";
 
-type StartupProductConfig = {
+type ProductConfig = {
   name?: string;
   version?: string;
 };
 
-type StartupEnvRequirementsConfig = {
+type EnvRequirementsConfig = {
   required?: string[] | string;
 };
 
-type StartupRequirementConditionConfig = {
+type RequirementConditionConfig = {
   env?: string;
   equals?: string | string[];
   notEquals?: string | string[];
   exists?: boolean;
 };
 
-type StartupValueRequirementConfig = {
+type ValueRequirementConfig = {
   env?: string;
   value?: string | number | boolean;
   required?: boolean;
@@ -27,134 +27,134 @@ type StartupValueRequirementConfig = {
   notPattern?: string;
   statusCode?: string;
   message?: string;
-  when?: StartupRequirementConditionConfig;
+  when?: RequirementConditionConfig;
 };
 
-type StartupPathRequirementConfig = {
+type PathRequirementConfig = {
   env?: string;
   path?: string;
   kind?: "dir" | "file";
   create?: boolean;
   writable?: boolean;
-  when?: StartupRequirementConditionConfig;
+  when?: RequirementConditionConfig;
 };
 
-type StartupUrlRequirementConfig = {
+type UrlRequirementConfig = {
   env?: string;
   value?: string;
   protocols?: string[] | string;
   requiredParts?: string[] | string;
-  when?: StartupRequirementConditionConfig;
+  when?: RequirementConditionConfig;
 };
 
-type StartupPostgresRequirementConfig = {
+type PostgresRequirementConfig = {
   env?: string;
   value?: string;
   timeoutMs?: number;
-  when?: StartupRequirementConditionConfig;
+  when?: RequirementConditionConfig;
 };
 
-type StartupPortRequirementConfig = {
+type PortRequirementConfig = {
   env?: string;
   value?: number | string;
   defaultValue?: number | string;
   host?: string;
   hostEnv?: string;
   checkAvailable?: boolean;
-  when?: StartupRequirementConditionConfig;
+  when?: RequirementConditionConfig;
 };
 
-type StartupRequirementsConfig = {
-  env?: StartupEnvRequirementsConfig;
-  values?: StartupValueRequirementConfig[];
-  paths?: StartupPathRequirementConfig[];
-  urls?: StartupUrlRequirementConfig[];
-  postgres?: StartupPostgresRequirementConfig[];
-  ports?: StartupPortRequirementConfig[];
+type RequirementsConfig = {
+  env?: EnvRequirementsConfig;
+  values?: ValueRequirementConfig[];
+  paths?: PathRequirementConfig[];
+  urls?: UrlRequirementConfig[];
+  postgres?: PostgresRequirementConfig[];
+  ports?: PortRequirementConfig[];
 };
 
-type StartupLifecycleConfig = {
+type LifecycleConfig = {
   shutdownSignals?: string[] | string;
   shutdownTimeoutMs?: number;
 };
 
-type StartupMessageConfig = {
+type MessageConfig = {
   enabled?: boolean;
   level?: StartupLogLevel;
   text?: string | string[];
   metadata?: Record<string, unknown>;
 };
 
-type StartupMessagesConfig = Record<string, StartupMessageConfig|undefined>;
+type MessagesConfig = Record<string, MessageConfig|undefined>;
 
-type StartupConfig = {
+type Config = {
   forVersion?: string;
-  product?: StartupProductConfig;
-  requirements?: StartupRequirementsConfig;
-  lifecycle?: StartupLifecycleConfig;
-  messages?: StartupMessagesConfig;
+  product?: ProductConfig;
+  requirements?: RequirementsConfig;
+  lifecycle?: LifecycleConfig;
+  messages?: MessagesConfig;
   bootstrap?: Pick<BootstrapOptions, "dir"|"scan"|"verbose">;
 };
 
-type NormalizedStartupMessageConfig = {
+type NormalizedMessageConfig = {
   enabled: boolean;
   level: StartupLogLevel;
   text: string[];
   metadata: Record<string, unknown>;
 };
 
-type NormalizedStartupConfig = {
+type NormalizedConfig = {
   forVersion: string;
-  product: Required<StartupProductConfig>;
+  product: Required<ProductConfig>;
   requirements: {
     env: {
       required: string[];
     };
-    values: StartupValueRequirementConfig[];
-    paths: StartupPathRequirementConfig[];
-    urls: Array<StartupUrlRequirementConfig& {
+    values: ValueRequirementConfig[];
+    paths: PathRequirementConfig[];
+    urls: Array<UrlRequirementConfig& {
       protocols: string[];
       requiredParts: string[];
     }>;
-    postgres: Required<StartupPostgresRequirementConfig>[];
-    ports: StartupPortRequirementConfig[];
+    postgres: Required<PostgresRequirementConfig>[];
+    ports: PortRequirementConfig[];
   };
   lifecycle: {
     shutdownSignals: string[];
     shutdownTimeoutMs: number;
   };
-  messages: Record<string, NormalizedStartupMessageConfig>;
+  messages: Record<string, NormalizedMessageConfig>;
   bootstrap: Pick<BootstrapOptions, "dir"|"scan"|"verbose">;
 };
 
-type LoadedStartupConfig = {
-  config: NormalizedStartupConfig;
+type LoadedConfig = {
+  config: NormalizedConfig;
   configPath: string | null;
   dependencies: string[];
 };
 
-type LoadStartupConfigOptions = {
+type LoadConfigOptions = {
   configPath?: string;
   defaultIfMissing?: boolean;
   searchFrom?: string;
 };
 
 export type {
-  LoadedStartupConfig,
-  LoadStartupConfigOptions,
-  NormalizedStartupConfig,
-  NormalizedStartupMessageConfig,
-  StartupConfig,
-  StartupEnvRequirementsConfig,
-  StartupLifecycleConfig,
-  StartupMessageConfig,
-  StartupMessagesConfig,
-  StartupPathRequirementConfig,
-  StartupPortRequirementConfig,
-  StartupPostgresRequirementConfig,
-  StartupProductConfig,
-  StartupRequirementConditionConfig,
-  StartupRequirementsConfig,
-  StartupUrlRequirementConfig,
-  StartupValueRequirementConfig,
+  LoadedConfig,
+  LoadConfigOptions,
+  NormalizedConfig,
+  NormalizedMessageConfig,
+  Config,
+  EnvRequirementsConfig,
+  LifecycleConfig,
+  MessageConfig,
+  MessagesConfig,
+  PathRequirementConfig,
+  PortRequirementConfig,
+  PostgresRequirementConfig,
+  ProductConfig,
+  RequirementConditionConfig,
+  RequirementsConfig,
+  UrlRequirementConfig,
+  ValueRequirementConfig,
 };

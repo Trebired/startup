@@ -16,7 +16,7 @@ import type {
   BootstrapOptions,
   BootstrapRunReport,
 } from "@package/bootstrap";
-import type { NormalizedStartupConfig, StartupConfig } from "#config-types";
+import type { NormalizedConfig, Config } from "#config-types";
 import type {
   StartupContext,
   StartupEarlyBootAction,
@@ -67,9 +67,9 @@ async function runStartup(options: StartupRuntimeOptions = {}): Promise<StartupR
 
 async function resolveStartupConfig(
   options: StartupRuntimeOptions,
-): Promise<NormalizedStartupConfig> {
+): Promise<NormalizedConfig> {
   if (options.config) {
-    return normalizeConfig(options.config as StartupConfig, {
+    return normalizeConfig(options.config as Config, {
         requireForVersion: true,
     });
   }
@@ -78,7 +78,7 @@ async function resolveStartupConfig(
 
 function createContext(
   options: StartupRuntimeOptions,
-  config: NormalizedStartupConfig,
+  config: NormalizedConfig,
   logger: StartupRuntimeHandle["logger"],
 ): StartupContext {
   return {
@@ -112,7 +112,7 @@ function resolveBootstrapOptions(
 function bindShutdownSignals(
   controller: StartupRuntimeHandle["shutdownController"],
   options: StartupRuntimeOptions,
-  config: NormalizedStartupConfig,
+  config: NormalizedConfig,
 ): (() => void) | null {
   if (options.bindSignals === false) return null;
   return controller.bindSignals({

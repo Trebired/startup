@@ -16,7 +16,7 @@ import {
 } from "./requirement/helpers.js";
 import { checkValues } from "./requirement/values.js";
 import { toTrimmedString as toString } from "@trebired/utils";
-import type { NormalizedStartupConfig, StartupConfig } from "#config-types";
+import type { NormalizedConfig, Config } from "#config-types";
 import type {
   StartupRequirementContext,
   StartupRequirementData,
@@ -25,7 +25,7 @@ import type {
 } from "#types";
 
 async function checkRequirements(
-  config: NormalizedStartupConfig | StartupConfig,
+  config: NormalizedConfig | Config,
   context: Omit<StartupRequirementContext, "config">,
 ): Promise<StartupRequirementsResult> {
   const fullContext: StartupRequirementContext = {
@@ -66,7 +66,7 @@ async function checkPaths(context: StartupRequirementContext): Promise<StartupRe
 }
 
 function resolvePathRequirement(
-  requirement: NormalizedStartupConfig["requirements"]["paths"][number],
+  requirement: NormalizedConfig["requirements"]["paths"][number],
   context: StartupRequirementContext,
 ): string {
   const envPath = requirement.env ? context.env[requirement.env] : "";
@@ -75,7 +75,7 @@ function resolvePathRequirement(
 
 async function checkPathTarget(
   target: string,
-  requirement: NormalizedStartupConfig["requirements"]["paths"][number],
+  requirement: NormalizedConfig["requirements"]["paths"][number],
   cwd: string,
 ): Promise<StartupRequirementFailure|null> {
   const absolutePath = path.resolve(cwd, target);
@@ -247,7 +247,7 @@ function collectPorts(context: StartupRequirementContext): Record<string, number
 }
 
 function resolveRequirementValue(
-  requirement: NormalizedStartupConfig["requirements"]["values"][number],
+  requirement: NormalizedConfig["requirements"]["values"][number],
   context: StartupRequirementContext,
 ): string {
   const raw = requirement.value ?? (requirement.env ? context.env[requirement.env] : "");

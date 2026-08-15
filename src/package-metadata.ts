@@ -2,7 +2,7 @@ import { readPackageIdentity } from "@trebired/utils";
 
 const packageIdentity = readPackageIdentity({
     fallbackSlug: "startup",
-    fallbackVersion: "0.2.0",
+    fallbackVersion: "0.3.0",
     packageJsonUrl: new URL("../package.json", import.meta.url),
 });
 const PACKAGE_NAME = packageIdentity.name;

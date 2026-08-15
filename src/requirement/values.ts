@@ -4,7 +4,7 @@ import {
   renderRequirementTemplate,
 } from "./helpers.js";
 import { toTrimmedString as toString } from "@trebired/utils";
-import type { NormalizedStartupConfig } from "#config-types";
+import type { NormalizedConfig } from "#config-types";
 import type {
   StartupRequirementContext,
   StartupRequirementFailure,
@@ -32,7 +32,7 @@ function checkValues(context: StartupRequirementContext): StartupRequirementFail
 }
 
 function validateRequirementValue(
-  requirement: NormalizedStartupConfig["requirements"]["values"][number],
+  requirement: NormalizedConfig["requirements"]["values"][number],
   value: string,
   label: string,
 ): StartupRequirementFailure[] {
@@ -79,7 +79,7 @@ function validateRequirementValue(
 }
 
 function valueFailure(
-  requirement: NormalizedStartupConfig["requirements"]["values"][number],
+  requirement: NormalizedConfig["requirements"]["values"][number],
   fallbackStatus: string,
   fallbackMessage: string,
   extra: Partial<StartupRequirementFailure>,
@@ -93,7 +93,7 @@ function valueFailure(
 }
 
 function resolveRequirementValue(
-  requirement: NormalizedStartupConfig["requirements"]["values"][number],
+  requirement: NormalizedConfig["requirements"]["values"][number],
   context: StartupRequirementContext,
 ): string {
   const raw = requirement.value ?? (requirement.env ? context.env[requirement.env] : "");

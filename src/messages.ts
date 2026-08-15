@@ -4,14 +4,14 @@ import {
   isRecord,
   toTrimmedString as toString,
 } from "@trebired/utils";
-import type { NormalizedStartupConfig } from "#config-types";
+import type { NormalizedConfig } from "#config-types";
 import type {
   NormalizedStartupLogger,
   StartupMessageData,
 } from "#types";
 
 type StartupMessageContext = {
-  config: NormalizedStartupConfig;
+  config: NormalizedConfig;
   logger: NormalizedStartupLogger;
 };
 
@@ -40,7 +40,7 @@ function renderTemplate(template: string, data: StartupMessageData): string {
 }
 
 function createTemplateData(
-  config: NormalizedStartupConfig,
+  config: NormalizedConfig,
   data: StartupMessageData,
 ): StartupMessageData {
   const startupMs = typeof data.startupMs === "number" ? data.startupMs : undefined;

@@ -4,7 +4,7 @@ import {
   toNumber,
   toTrimmedString as toString,
 } from "@trebired/utils";
-import type { NormalizedStartupConfig, StartupPortRequirementConfig } from "#config-types";
+import type { NormalizedConfig, PortRequirementConfig } from "#config-types";
 import type { StartupEnv } from "#types";
 
 function parsePort(value: unknown, label = "port"): number {
@@ -16,7 +16,7 @@ function parsePort(value: unknown, label = "port"): number {
 }
 
 function resolvePort(
-  requirement: StartupPortRequirementConfig,
+  requirement: PortRequirementConfig,
   env: StartupEnv = process.env,
 ): number {
   const raw = requirement.value ?? envValue(requirement, env) ?? requirement.defaultValue;
@@ -24,7 +24,7 @@ function resolvePort(
 }
 
 function resolvePrimaryPort(
-  config: NormalizedStartupConfig,
+  config: NormalizedConfig,
   env: StartupEnv = process.env,
 ): number | null {
   const [first] = config.requirements.ports;
@@ -44,7 +44,7 @@ async function isPortInUse(port: number, host?: string): Promise<boolean> {
 }
 
 function envValue(
-  requirement: StartupPortRequirementConfig,
+  requirement: PortRequirementConfig,
   env: StartupEnv,
 ): string | undefined {
   const key = toString(requirement.env);

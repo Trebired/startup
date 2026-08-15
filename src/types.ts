@@ -11,7 +11,7 @@ import type {
   NormalizedLoggerAdapter,
 } from "@package/logger-adapter";
 import type { ResultLike } from "@package/result";
-import type { NormalizedStartupConfig, StartupConfig } from "#config-types";
+import type { NormalizedConfig, Config } from "#config-types";
 
 type StartupLogLevel = "debug" | "info" | "success" | "warn" | "error" | "fail";
 type StartupLogger = LoggerAdapterLogger;
@@ -38,7 +38,7 @@ type StartupRequirementData = {
 type StartupRequirementsResult = ResultLike<StartupRequirementData>;
 
 type StartupRequirementContext = {
-  config: NormalizedStartupConfig;
+  config: NormalizedConfig;
   cwd: string;
   env: StartupEnv;
   logger: NormalizedStartupLogger;
@@ -71,7 +71,7 @@ type StartupEarlyBootDecision = {
 };
 
 type StartupContext = {
-  config: NormalizedStartupConfig;
+  config: NormalizedConfig;
   env: StartupEnv;
   logger: NormalizedStartupLogger;
   projectRoot: string;
@@ -83,7 +83,7 @@ type StartupEarlyBootAction = (
 ) => void |StartupEarlyBootDecision | Promise<void|StartupEarlyBootDecision>;
 
 type StartupRuntimeHandle = {
-  config: NormalizedStartupConfig;
+  config: NormalizedConfig;
   logger: NormalizedStartupLogger;
   runtime: BootstrapRuntime;
   shutdownController: BootstrapShutdownController;
@@ -94,7 +94,7 @@ type StartupRuntimeOptions = {
   bootstrap?: BootstrapOptions | ((context: StartupContext) => BootstrapOptions);
   bindSignals?: boolean;
   checks?: StartupRequirementCheck[];
-  config?: StartupConfig | NormalizedStartupConfig;
+  config?: Config | NormalizedConfig;
   earlyBoot?: StartupEarlyBootAction | StartupEarlyBootAction[];
   env?: StartupEnv;
   logger?: StartupLogger;
