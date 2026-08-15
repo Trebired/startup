@@ -36,7 +36,7 @@ async function createStartupRuntime(
   const runtime = createBootstrap(bootstrapOptions);
   const shutdownController = createBootstrapShutdownController(runtime, {
       ...options.shutdown,
-      logger,
+      logger: options.logger,
       loggerAdapter: options.loggerAdapter,
       terminate: options.terminate,
       timeoutMs: config.lifecycle.shutdownTimeoutMs,

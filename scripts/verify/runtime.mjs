@@ -155,6 +155,15 @@ async function verifyShutdownSignals() {
   handlers.SIGINT();
   await waitFor(() => terminateCalls.length === 1);
   assert.deepEqual(terminateCalls, [0]);
+  assert.ok(
+    logs.some((event) => event.group === "trebired.bootstrap.shutdown"),
+    "shutdown logs should stay under bootstrap",
+  );
+  assert.equal(
+    logs.some((event) => event.group.includes("startup.trebired.bootstrap")),
+    false,
+    "shutdown logs must not be nested under startup",
+  );
   handle.cleanupSignals?.();
 }
 
