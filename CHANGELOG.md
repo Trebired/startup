@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1
+
+- Trimmed public config type exports so requirement internals stay internal to the package.
+
 ## 0.4.0
 
 - Added generic startup helpers for boot token parsing, lifecycle failure handling, startup state flags, strict listen handling, task cleanup management, startup step orchestration, and discovered-file bootstrapping.
