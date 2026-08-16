@@ -41,7 +41,7 @@ async function resetTemp() {
 
 async function verifyConfigLoading() {
   const projectRoot = path.join(tempRoot, "config");
-  await writeStartupConfig(projectRoot, "0.4.99");
+  await writeStartupConfig(projectRoot, "0.5.99");
   const loaded = await loadConfig(projectRoot);
   assert.equal(loaded.config.product.name, "Verify");
 
@@ -88,6 +88,21 @@ async function verifyRequirements() {
   assert.equal(failed.ok, false);
   assert.ok(failed.data.failures.some((item) => item.status_code === "startup-env-missing"));
 
+  const rootRequired = requirementConfig(path.join(tempRoot, "root-data"));
+  rootRequired.requirements.process = { root: true };
+  const rootFailed = await checkRequirements(rootRequired, {
+      ...requirementContext(),
+      process: { gid: 1000, uid: 1000 },
+  });
+  assert.equal(rootFailed.ok, false);
+  assert.ok(rootFailed.data.failures.some((item) => item.status_code === "startup-process-root-required"));
+
+  const rootOk = await checkRequirements(rootRequired, {
+      ...requirementContext(),
+      process: { gid: 0, uid: 0 },
+  });
+  assert.equal(rootOk.ok, true);
+
   const invalidInstance = await checkRequirements(config, requirementContext({ INSTANCE: "D8AC90MWBCHR" }));
   assert.equal(invalidInstance.ok, false);
   assert.ok(invalidInstance.data.failures.some((item) => item.status_code === "startup-value-forbidden"));
@@ -101,7 +116,7 @@ async function verifyRequirements() {
 
 function requirementConfig(dirPath) {
   return {
-    forVersion: "0.4.99",
+    forVersion: "0.5.99",
     product: { name: "Verify", version: "9.9.9" },
     requirements: {
       env: { required: ["DATA_DIR", "INSTANCE"] },

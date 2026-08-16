@@ -17,6 +17,7 @@ import type {
   PathRequirementConfig,
   PortRequirementConfig,
   PostgresRequirementConfig,
+  ProcessRequirementConfig,
   RequirementConditionConfig,
   UrlRequirementConfig,
   ValueRequirementConfig,
@@ -92,6 +93,7 @@ function normalizeRequirements(input: Config["requirements"]) {
     urls: normalizeUrlRequirements(value.urls),
     postgres: normalizePostgresRequirements(value.postgres),
     ports: normalizePortRequirements(value.ports),
+    process: normalizeProcessRequirement(value.process),
   };
 }
 
@@ -155,6 +157,24 @@ function normalizePortRequirements(input: unknown): PortRequirementConfig[] {
           when: normalizeCondition(item.when),
       }) as PortRequirementConfig;
   });
+}
+
+function normalizeProcessRequirement(input: unknown): ProcessRequirementConfig {
+  if (!isRecord(input)) return {};
+  return compactRecord({
+      gid: normalizeProcessId(input.gid),
+      message: toString(input.message) || undefined,
+      root: input.root === true,
+      statusCode: toString(input.statusCode) || undefined,
+      uid: normalizeProcessId(input.uid),
+      when: normalizeCondition(input.when),
+  }) as ProcessRequirementConfig;
+}
+
+function normalizeProcessId(value: unknown): number | string | undefined {
+  return typeof value === "number" || typeof value === "string"
+  ? value
+  : undefined;
 }
 
 function normalizeValueRequirementLiteral(value: unknown): string | number | boolean | undefined {

@@ -139,7 +139,7 @@ async function writeConsumerSourceFiles(consumerDir) {
   await fs.writeFile(path.join(consumerDir, "index.ts"), [
       startupImport,
       "",
-      "const config = defineConfig({ forVersion: '0.3.0' });",
+      "const config = defineConfig({ forVersion: '0.5.0' });",
       "void config;",
       "void checkRequirements;",
       "void createStartupRuntime;",

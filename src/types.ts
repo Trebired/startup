@@ -23,9 +23,11 @@ type StartupRequirementFailure = {
   check: string;
   status_code: string;
   message: string;
+  gid?: number | null;
   key?: string;
   part?: string;
   path?: string;
+  uid?: number | null;
   value?: unknown;
   error?: unknown;
 };
@@ -45,6 +47,12 @@ type StartupRequirementContext = {
   checks?: StartupRequirementCheck[];
   isPortUsed?: (port: number, host?: string) => boolean | Promise<boolean>;
   postgresConnector?: (connectionString: string, timeoutMs: number) => Promise<void>;
+  process?: StartupProcessInfo;
+};
+
+type StartupProcessInfo = {
+  gid?: number | null;
+  uid?: number | null;
 };
 
 type StartupRequirementCheck = (
@@ -103,6 +111,7 @@ type StartupRuntimeOptions = {
   onceProcessEvent?: (signal: string, handler: () => void) => unknown;
   isPortUsed?: (port: number, host?: string) => boolean | Promise<boolean>;
   postgresConnector?: (connectionString: string, timeoutMs: number) => Promise<void>;
+  process?: StartupProcessInfo;
   projectRoot?: string;
   shutdown?: Omit<BootstrapShutdownControllerOptions, "logger"|"terminate">;
   startedAt?: number;
@@ -128,6 +137,7 @@ export type {
   StartupLogger,
   StartupLoggerAdapter,
   StartupMessageData,
+  StartupProcessInfo,
   StartupRequirementCheck,
   StartupRequirementContext,
   StartupRequirementData,

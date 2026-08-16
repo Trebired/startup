@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0
+
+- Added generic process requirements so apps can declare root, uid, and gid preflight checks in startup config.
+
 ## 0.4.1
 
 - Trimmed public config type exports so requirement internals stay internal to the package.

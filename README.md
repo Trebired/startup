@@ -10,6 +10,12 @@ Apps keep domain-specific services in their own code and pass them in as hooks o
 import { runStartup } from "@trebired/startup";
 
 await runStartup({
+  config: {
+    forVersion: "0.5.0",
+    requirements: {
+      process: { root: true },
+    },
+  },
   bootstrap: {
     subsystems: [
       {

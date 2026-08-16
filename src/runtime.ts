@@ -58,6 +58,7 @@ async function runStartup(options: StartupRuntimeOptions = {}): Promise<StartupR
       isPortUsed: options.isPortUsed,
       logger: handle.logger,
       postgresConnector: options.postgresConnector,
+      process: options.process,
   });
   if (!requirements.ok) return await finishRequirementFailure(options, requirements.data);
   const bootstrap = await runBootstrap(handle, context);

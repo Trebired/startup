@@ -64,6 +64,15 @@ type PortRequirementConfig = {
   when?: RequirementConditionConfig;
 };
 
+type ProcessRequirementConfig = {
+  root?: boolean;
+  uid?: number | string;
+  gid?: number | string;
+  statusCode?: string;
+  message?: string;
+  when?: RequirementConditionConfig;
+};
+
 type RequirementsConfig = {
   env?: EnvRequirementsConfig;
   values?: ValueRequirementConfig[];
@@ -71,6 +80,7 @@ type RequirementsConfig = {
   urls?: UrlRequirementConfig[];
   postgres?: PostgresRequirementConfig[];
   ports?: PortRequirementConfig[];
+  process?: ProcessRequirementConfig;
 };
 
 type LifecycleConfig = {
@@ -118,6 +128,7 @@ type NormalizedConfig = {
     }>;
     postgres: Required<PostgresRequirementConfig>[];
     ports: PortRequirementConfig[];
+    process: ProcessRequirementConfig;
   };
   lifecycle: {
     shutdownSignals: string[];
@@ -152,6 +163,7 @@ export type {
   PathRequirementConfig,
   PortRequirementConfig,
   PostgresRequirementConfig,
+  ProcessRequirementConfig,
   ProductConfig,
   RequirementConditionConfig,
   RequirementsConfig,

@@ -43,6 +43,7 @@ async function checkRequirements(
     ...restContext,
   };
   const failures = [
+    ...checkProcess(fullContext),
     ...checkRequiredEnv(fullContext),
     ...checkValues(fullContext),
     ...await checkPaths(fullContext),
@@ -52,6 +53,65 @@ async function checkRequirements(
     ...await checkCustom(fullContext),
   ];
   return requirementResult(fullContext, failures);
+}
+
+function checkProcess(context: StartupRequirementContext): StartupRequirementFailure[] {
+  const requirement = context.config.requirements.process;
+  if (!matchesCondition(requirement.when, context)) return [];
+  const processInfo = resolveProcessInfo(context);
+  return [
+    ...checkRootRequirement(requirement, processInfo),
+    ...checkProcessId("uid", requirement.uid, processInfo.uid),
+    ...checkProcessId("gid", requirement.gid, processInfo.gid),
+  ];
+}
+
+function checkRootRequirement(
+  requirement: NormalizedConfig["requirements"]["process"],
+  processInfo: { uid: number | null; gid: number | null },
+): StartupRequirementFailure[] {
+  if (requirement.root !== true || processInfo.uid === 0) return [];
+  return [
+    failure(
+      "process",
+      toString(requirement.statusCode) || "startup-process-root-required",
+      toString(requirement.message) || "Root privileges required",
+      processInfo,
+    ),
+  ];
+}
+
+function checkProcessId(
+  key: "uid" | "gid",
+  expected: unknown,
+  actual: number | null,
+): StartupRequirementFailure[] {
+  if (expected === undefined || expected === "") return [];
+  const expectedNumber = Number(expected);
+  if (Number.isFinite(expectedNumber) && actual === expectedNumber) return [];
+  return [
+    failure("process", `startup-process-${key}-mismatch`, `Process ${key} does not match`, {
+        [key]: actual,
+        value: expected,
+    }),
+  ];
+}
+
+function resolveProcessInfo(
+  context: StartupRequirementContext,
+): { uid: number | null; gid: number | null } {
+  return {
+    gid: context.process?.gid ?? readProcessGid(),
+    uid: context.process?.uid ?? readProcessUid(),
+  };
+}
+
+function readProcessUid(): number | null {
+  return typeof process.getuid === "function" ? process.getuid() : null;
+}
+
+function readProcessGid(): number | null {
+  return typeof process.getgid === "function" ? process.getgid() : null;
 }
 
 function checkRequiredEnv(context: StartupRequirementContext): StartupRequirementFailure[] {
