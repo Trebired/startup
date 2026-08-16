@@ -21,9 +21,10 @@ function startupMark(
 ) {
   const started = Date.now();
   return function done(extra: Record<string, unknown> = {}) {
-    logger.info?.(`${STARTUP_LOG_GROUP}.runtime`, label, {
+    logger.info?.(`${STARTUP_LOG_GROUP}.runtime`, "operation completed", {
         took_ms: Date.now() - started,
         ...extra,
+        label,
     });
   };
 }

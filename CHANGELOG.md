@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+- Made startup task, service, step, lifecycle, and timing logs package-owned and generic.
+- Kept caller-specific labels in metadata instead of allowing custom groups or messages.
+- Stopped logging successful scheduled task runs; only failures are logged.
+
 ## 0.5.0
 
 - Added generic process requirements so apps can declare root, uid, and gid preflight checks in startup config.

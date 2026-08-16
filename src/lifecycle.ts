@@ -31,7 +31,6 @@ type LifecycleFailureControllerOptions = {
   defaultMessage?: string;
   defaultReason?: string;
   defaultStatusCode?: string;
-  group?: string;
   logger?: StartupLogger;
   loggerAdapter?: StartupLoggerAdapter;
 };
@@ -56,7 +55,7 @@ function createLifecycleFailureState(options: LifecycleFailureControllerOptions)
     defaultMessage: toString(options.defaultMessage) || "startup-lifecycle-failure-requested",
     defaultReason: toString(options.defaultReason) || "startup-unavailable",
     defaultStatusCode: toString(options.defaultStatusCode) || "startup-unavailable",
-    group: toString(options.group) || `${STARTUP_LOG_GROUP}.lifecycle`,
+    group: `${STARTUP_LOG_GROUP}.lifecycle`,
     handler: null as LifecycleFailureHandler | null,
     logger: resolveLogger(options.logger, options.loggerAdapter),
     promise: null as Promise<void>|null,

@@ -215,7 +215,6 @@ async function verifyTaskHelpers() {
   manager.startService({
       label: "verify service",
       start: () => ({ stop: () => { stopped = true; } }),
-      startedMessage: "service started",
   });
   manager.schedule({
       label: "verify scheduled",
@@ -229,7 +228,15 @@ async function verifyTaskHelpers() {
     ], { logger: standardLogger(logs) });
   manager.stop();
   assert.equal(stopped, true);
-  assert.ok(logs.some((event) => event.message === "verify-failing-step failed"));
+  assert.ok(logs.some((event) =>
+      event.group === "trebired.startup.tasks" &&
+        event.message === "service started" &&
+        event.metadata?.label === "verify service"));
+  assert.equal(logs.some((event) => event.message === "task completed"), false);
+  assert.ok(logs.some((event) =>
+      event.group === "trebired.startup.tasks" &&
+        event.message === "step failed" &&
+        event.metadata?.step_id === "verify-failing-step"));
 }
 
 async function verifyListenHelpers() {
