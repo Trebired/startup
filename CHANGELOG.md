@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.3
+
+- Removed dead `config.creator` from `package.json`.
+- Updated shared utilities to `@trebired/utils@^0.6.0` and replaced the removed `readPackageIdentity()` with `readPackageJsonUrl()` + `readOrganizationIdentity()` + `packageSlug()`/`joinLogGroup()`. No change to exported metadata values.
+
 ## 0.5.2
 
 - Made startup task, service, step, lifecycle, and timing logs package-owned and generic.

@@ -5,13 +5,10 @@
       "displayName": "Trebired",
       "name": "trebired",
       "website": "https://trebired.com"
-    },
-    "creator": {
-      "name": "Miroslav Machynka"
     }
   },
   "name": "@trebired/startup",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Generic Trebired application startup shell with config loading, preflight requirements, lifecycle glue, shutdown binding, and startup messages.",
   "type": "module",
   "private": false,
@@ -53,7 +50,7 @@
     "@package/bootstrap": "npm:@trebired/bootstrap@^2.2.2",
     "@package/logger-adapter": "npm:@trebired/logger-adapter@^0.4.13",
     "@package/result": "npm:@trebired/result@^1.2.3",
-    "@trebired/utils": "^0.4.5"
+    "@trebired/utils": "^0.6.0"
   },
   "devDependencies": {
     "@trebired/code-discipline": "^7.0.0",
