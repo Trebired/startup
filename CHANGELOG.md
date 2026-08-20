@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.5
+
+- Updated bootstrap and result dependency ranges to the current package releases so consumers do not retain older nested logger-adapter installs.
+
 ## 0.5.4
 
 - Updated bootstrap and logger-adapter dependencies so startup-owned bootstrap initialization logs use the idempotent package initialization path.
