@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4
+
+- Updated bootstrap and logger-adapter dependencies so startup-owned bootstrap initialization logs use the idempotent package initialization path.
+
 ## 0.5.3
 
 - Removed dead `config.creator` from `package.json`.
