@@ -113,3 +113,9 @@ export type {
   StartupRuntimeHandle,
   StartupRuntimeOptions,
 } from "./types.js";
+export {
+  MESSAGE_PRESETS,
+  messagePresetNames,
+  resolveMessagePreset,
+} from "./config/presets.js";
+export type { MessagePreset } from "./config/presets.js";

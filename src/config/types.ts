@@ -91,6 +91,7 @@ type LifecycleConfig = {
 type MessageConfig = {
   enabled?: boolean;
   level?: StartupLogLevel;
+  preset?: string;
   text?: string | string[];
   metadata?: Record<string, unknown>;
 };

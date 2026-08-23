@@ -8,7 +8,7 @@
     }
   },
   "name": "@trebired/startup",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "Generic Trebired application startup shell with config loading, preflight requirements, lifecycle glue, shutdown binding, and startup messages.",
   "type": "module",
   "private": false,

@@ -8,6 +8,7 @@ import { STARTUP_LOG_GROUP } from "#constants";
 import { loadConfig, normalizeConfig } from "#config";
 import { resolveLogger } from "#logging";
 import { emitStartupMessage } from "#messages";
+import { resolvePrimaryOrigins } from "#ports";
 import { resolvePrimaryPort } from "#ports";
 import { checkRequirements } from "#requirements";
 import { formatStartupDuration } from "#time";
@@ -192,6 +193,7 @@ function emitConfiguredMessages(
   const startupMs = Date.now() - context.startedAt;
   const port = options.messageData?.port ?? resolvePrimaryPort(handle.config, context.env);
   const data = {
+    ...resolvePrimaryOrigins(handle.config, context.env),
     duration: formatStartupDuration(startupMs),
     port: port ?? undefined,
     product: handle.config.product,

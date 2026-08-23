@@ -28,6 +28,7 @@ async function main() {
   await verifyConfigLoading();
   await verifyRequirements();
   await verifyMessages();
+  await verifyMessagePresets();
   await verifyGenericHelpers();
   await verifyRuntime();
   await verifyShutdownSignals();
@@ -164,6 +165,75 @@ async function verifyMessages() {
   emitStartupMessage({ config, logger: captureLogger(logs) }, "ready", { port: 42, startupMs: 1250 });
   assert.deepEqual(logs.map((event) => event.message), ["Ready Verify", "Port 42"]);
   assert.equal(logs[0].metadata.static, true);
+}
+
+async function verifyMessagePresets() {
+  const { normalizeConfig } = await import("../../dist/config/index.js");
+  const { resolvePrimaryOrigins } = await import("../../dist/ports.js");
+
+  // purpose-built: requirementConfig() disables `welcome`, which these cases need
+  const base = () => ({
+    forVersion: "0.5.99",
+    product: { name: "Verify", version: "9.9.9" },
+    requirements: { ports: [{ defaultValue: 3210, env: "PORT" }] },
+  });
+  const emit = (config, key, data = {}) => {
+    const logs = [];
+    emitStartupMessage({ config, logger: captureLogger(logs) }, key, data);
+    return logs;
+  };
+  const env = { PORT: "3000" };
+
+  // an app that sets no preset must emit exactly what it always has
+  const untouched = normalizeConfig(base());
+  assert.deepEqual(
+    emit(untouched, "welcome", { startupMs: 1250 }).map((e) => e.message),
+    ["Welcome to Verify 9.9.9"],
+  );
+  assert.deepEqual(
+    emit(untouched, "ready", { port: 42, startupMs: 1250 }).map((e) => e.message),
+    ["Server is ready on port 42. Startup took 1.25s."],
+  );
+  assert.equal(untouched.messages.ready.level, "success");
+
+  // origins are derived from the port requirement, not supplied by the caller
+  const origins = resolvePrimaryOrigins(untouched, env);
+  assert.equal(origins.origin, "http://localhost:3000");
+  assert.equal(origins.loopbackOrigin, "http://localhost:3000");
+
+  // named presets
+  const raw = base();
+  raw.messages = { ready: { preset: "raw" }, welcome: { preset: "minimal" } };
+  const rawConfig = normalizeConfig(raw);
+  assert.deepEqual(
+    emit(rawConfig, "ready", origins).map((e) => e.message),
+    ["Server ready :: http://localhost:3000"],
+  );
+  assert.deepEqual(emit(rawConfig, "welcome").map((e) => e.message), ["Verify 9.9.9"]);
+  assert.equal(rawConfig.messages.welcome.level, "info", "preset carries its own level");
+
+  // multi-line preset
+  const banner = base();
+  banner.messages = { welcome: { preset: "banner" } };
+  assert.deepEqual(
+    emit(normalizeConfig(banner), "welcome").map((e) => e.message),
+    ["Verify 9.9.9", "Starting…"],
+  );
+
+  // explicit text and level beat the preset
+  const overridden = base();
+  overridden.messages = { ready: { level: "warn", preset: "raw", text: ["Custom {port}"] } };
+  const overriddenConfig = normalizeConfig(overridden);
+  assert.deepEqual(emit(overriddenConfig, "ready", { port: 9 }).map((e) => e.message), ["Custom 9"]);
+  assert.equal(overriddenConfig.messages.ready.level, "warn");
+
+  // an unknown preset is a config error, not a silent fallback
+  const bogus = base();
+  bogus.messages = { ready: { preset: "nope" } };
+  assert.throws(() => normalizeConfig(bogus), /has no preset "nope"/u);
+
+  // a line whose placeholders cannot resolve is dropped, not half-rendered
+  assert.deepEqual(emit(rawConfig, "ready", {}).map((e) => e.message), []);
 }
 
 async function verifyGenericHelpers() {

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6.0
+
+### Added
+
+- Startup messages can select a named preset instead of restating a template. `messages.<key>.preset` picks from a registry grouped by message key, so a `ready` style cannot be chosen for `welcome`. `welcome` offers `prose`, `minimal`, and `banner`; `ready` offers `prose`, `raw`, `timed`, and `minimal`. Resolution is explicit `text` first, then the named preset, then the key's default preset; `level` follows the same order, so a preset carries its own level unless one is configured. An unknown preset name throws during `normalizeConfig()` rather than falling back, so a typo cannot silently emit different output than the config asked for.
+- `origin` and `loopbackOrigin` are derived from the primary port requirement. Both were already declared on `StartupMessageData` but were only ever populated when a caller passed them, so an origin-based message rendered as `Server ready :: `. `resolvePrimaryOrigins()` builds them from the requirement's `host`/`hostEnv` and resolved port, treating a wildcard bind (`0.0.0.0`, `::`) as loopback since that is where the server is actually reachable. A caller-supplied value still wins.
+- `MESSAGE_PRESETS`, `messagePresetNames()`, and `resolveMessagePreset()` are exported for tooling.
+
+### Fixed
+
+- A message line whose placeholders cannot be resolved is now skipped instead of logged half-rendered. `renderTemplate()` substitutes an empty string for anything missing, which turned `Server ready :: {origin}` into `Server ready :: ` when no port was resolvable. Other lines of the same message still emit.
+
+The shipped `welcome` and `ready` text is unchanged — it is now the `prose` preset and remains the default, so an app that configures no preset logs exactly what it logged before.
+
 ## 0.5.5
 
 - Updated bootstrap and result dependency ranges to the current package releases so consumers do not retain older nested logger-adapter installs.

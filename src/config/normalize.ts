@@ -8,6 +8,7 @@ import {
 } from "@trebired/utils";
 import { resolveForVersion } from "@trebired/utils";
 import { PACKAGE_VERSION } from "#metadata";
+import { resolveMessagePreset } from "./presets.js";
 import type {
   NormalizedConfig,
   Config,
@@ -30,16 +31,8 @@ type NormalizeOptions = {
 };
 
 const DEFAULT_MESSAGES: MessagesConfig = {
-  ready: {
-    enabled: true,
-    level: "success",
-    text: "Server is ready on port {port}. Startup took {duration}.",
-  },
-  welcome: {
-    enabled: true,
-    level: "success",
-    text: "Welcome to {product.name} {product.version}",
-  },
+  ready: { enabled: true },
+  welcome: { enabled: true },
 };
 
 function defineConfig<TConfig extends Config>(config: TConfig): TConfig {
@@ -218,16 +211,24 @@ function normalizeMessages(input: MessagesConfig | undefined) {
   const merged = { ...DEFAULT_MESSAGES, ...(isRecord(input) ? input : {}) };
   for (const [key, value] of Object.entries(merged)) {
     if (!isRecord(value)) continue;
-    messages[key] = normalizeMessage(value);
+    messages[key] = normalizeMessage(key, value);
   }
   return messages;
 }
 
-function normalizeMessage(input: MessageConfig) {
+/**
+ * Explicit `text` wins over a preset, a named preset wins over the key's
+ * default preset. `level` follows the same order.
+ */
+function normalizeMessage(key: string, input: MessageConfig) {
+  const preset = resolveMessagePreset(key, input.preset);
+  const text = uniqueStrings(input.text);
   return {
     enabled: input.enabled !== false,
-    level: normalizeLevel(input.level),
-    text: uniqueStrings(input.text),
+    level: input.level === undefined && preset
+    ? preset.level
+    : normalizeLevel(input.level),
+    text: text.length ? text : [...(preset?.text || [])],
     metadata: isRecord(input.metadata) ? { ...input.metadata } : {},
   };
 }

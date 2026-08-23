@@ -28,8 +28,23 @@ function emitStartupMessage(
     ...runtimeMetadata(templateData),
   };
   for (const text of message.text) {
+    if (!templateIsResolvable(text, templateData)) continue;
     context.logger.log(message.level, `${STARTUP_LOG_GROUP}.messages`, renderTemplate(text, templateData), metadata);
   }
+}
+
+/**
+ * `renderTemplate` substitutes an empty string for anything it cannot resolve,
+ * which turns a line like "Server ready :: {origin}" into "Server ready :: ".
+ * A line with an unresolved placeholder is dropped instead; other lines of the
+ * same message still emit.
+ */
+function templateIsResolvable(template: string, data: StartupMessageData): boolean {
+  const keys = Array.from(template.matchAll(/\{([^}]+)\}/gu)).map((match) => match[1] || "");
+  return keys.every((key) => {
+      const value = resolveTemplateValue(data, key);
+      return value !== undefined && value !== null && String(value).trim() !== "";
+  });
 }
 
 function renderTemplate(template: string, data: StartupMessageData): string {
