@@ -3,6 +3,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import packageJson from "../../package.json" with { type: "json" };
+
+const FIXTURE_FOR_VERSION = packageJson.version;
+
 import {
   checkRequirements,
   createLifecycleFailureController,
@@ -42,7 +46,7 @@ async function resetTemp() {
 
 async function verifyConfigLoading() {
   const projectRoot = path.join(tempRoot, "config");
-  await writeStartupConfig(projectRoot, "0.5.99");
+  await writeStartupConfig(projectRoot, FIXTURE_FOR_VERSION);
   const loaded = await loadConfig(projectRoot);
   assert.equal(loaded.config.product.name, "Verify");
 
@@ -117,7 +121,7 @@ async function verifyRequirements() {
 
 function requirementConfig(dirPath) {
   return {
-    forVersion: "0.5.99",
+    forVersion: FIXTURE_FOR_VERSION,
     product: { name: "Verify", version: "9.9.9" },
     requirements: {
       env: { required: ["DATA_DIR", "INSTANCE"] },
@@ -173,7 +177,7 @@ async function verifyMessagePresets() {
 
   // purpose-built: requirementConfig() disables `welcome`, which these cases need
   const base = () => ({
-    forVersion: "0.5.99",
+    forVersion: FIXTURE_FOR_VERSION,
     product: { name: "Verify", version: "9.9.9" },
     requirements: { ports: [{ defaultValue: 3210, env: "PORT" }] },
   });
