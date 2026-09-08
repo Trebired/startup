@@ -328,13 +328,26 @@ function requirementLogGroup(): string {
   return `${STARTUP_LOG_GROUP}.requirements`;
 }
 
+function describeError(error: unknown): string {
+  if (error instanceof Error) {
+    const code = toString((error as { code?: unknown }).code);
+    const detail = toString(error.message) || toString(error.name) || "Error";
+    return code ? `${detail} (${code})` : detail;
+  }
+  return toString(error) || "unknown error";
+}
+
 function failure(
   check: string,
   status_code: string,
   message: string,
   extra: Partial<StartupRequirementFailure> = {},
 ): StartupRequirementFailure {
-  return { check, status_code, message, ...extra };
+  const base = { check, status_code, message, ...extra };
+  if (base.error === undefined) return base;
+
+  const reason = describeError(base.error);
+  return { ...base, message: `${message}: ${reason}`, reason };
 }
 
 function cleanProtocol(value: unknown): string {

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.2
+
+### Fixed
+
+- Requirement failures that wrap a caught exception now carry the reason. `failure()` appends the
+  underlying message (and its `code`, when present) to the failure `message` and records it as a new
+  `reason` field, so `requirements:failed` reports `Path requirement failed: ENOENT: no such file or
+  directory, stat '/srv/data' (ENOENT)` instead of the bare `Path requirement failed`. This affects
+  every check that attaches a caught error: `path`, `url`, `port`, and `postgres`. The raw `error` is
+  still attached unchanged for callers that want the stack. Logging the reason legibly also needs
+  `@trebired/logger` 2.6.3 or newer, which stops `JSON.stringify` flattening `Error` instances to `{}`.
+
 ## 0.6.1
 
 ### Changed

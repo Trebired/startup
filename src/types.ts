@@ -27,6 +27,7 @@ type StartupRequirementFailure = {
   key?: string;
   part?: string;
   path?: string;
+  reason?: string;
   uid?: number | null;
   value?: unknown;
   error?: unknown;
