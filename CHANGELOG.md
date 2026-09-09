@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.0
+## 0.7.1
 
 - Changed the `requirements:failed` log line to name what failed. It now reads `requirements:failed :: port: Port is already in use (3999); env: Missing required env DATABASE_URL (DATABASE_URL)` instead of the bare status. The individual failures were only ever in the log metadata, so an application configuring `console: { metadata: false }` saw a failure with no reason at all. Up to four failures are summarized, then a count of the rest.
 - Changed the `forVersion` check to pass the config object to `resolveForVersion()`, so a config that does not declare `forVersion` as its first key fails instead of loading.
