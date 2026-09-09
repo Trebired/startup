@@ -10,10 +10,10 @@ type MessagePresetRegistry = Record<string, Record<string, MessagePreset>>;
 const DEFAULT_PRESET_NAME = "prose";
 
 /**
- * Presets are grouped by message key so a `ready` style cannot be selected for
- * `welcome`. `prose` is the default for every key and carries the text this
- * package has always emitted, so an app that sets no preset is unaffected.
- */
+* Presets are grouped by message key so a `ready` style cannot be selected for
+* `welcome`. `prose` is the default for every key and carries the text this
+* package has always emitted, so an app that sets no preset is unaffected.
+*/
 const MESSAGE_PRESETS: MessagePresetRegistry = {
   ready: {
     minimal: {
@@ -58,9 +58,9 @@ function hasMessagePresets(key: string): boolean {
 }
 
 /**
- * An unknown preset throws rather than falling back, so a typo cannot silently
- * produce different output than the config asked for.
- */
+* An unknown preset throws rather than falling back, so a typo cannot silently
+* produce different output than the config asked for.
+*/
 function resolveMessagePreset(key: string, name?: string): MessagePreset | null {
   const presets = MESSAGE_PRESETS[key];
   if (!presets) {

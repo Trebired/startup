@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0
+
+- Changed the `requirements:failed` log line to name what failed. It now reads `requirements:failed :: port: Port is already in use (3999); env: Missing required env DATABASE_URL (DATABASE_URL)` instead of the bare status. The individual failures were only ever in the log metadata, so an application configuring `console: { metadata: false }` saw a failure with no reason at all. Up to four failures are summarized, then a count of the rest.
+- Changed the `forVersion` check to pass the config object to `resolveForVersion()`, so a config that does not declare `forVersion` as its first key fails instead of loading.
+- Updated the `@trebired/utils` dependency range to `^0.9.3`. Ranges permitting 0.9.0 through 0.9.2 must be avoided: those releases throw when a caller validates a version without passing the config object.
+
 ## 0.6.2
 
 ### Fixed

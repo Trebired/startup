@@ -34,11 +34,11 @@ function emitStartupMessage(
 }
 
 /**
- * `renderTemplate` substitutes an empty string for anything it cannot resolve,
- * which turns a line like "Server ready :: {origin}" into "Server ready :: ".
- * A line with an unresolved placeholder is dropped instead; other lines of the
- * same message still emit.
- */
+* `renderTemplate` substitutes an empty string for anything it cannot resolve,
+* which turns a line like "Server ready :: {origin}" into "Server ready :: ".
+* A line with an unresolved placeholder is dropped instead; other lines of the
+* same message still emit.
+*/
 function templateIsResolvable(template: string, data: StartupMessageData): boolean {
   const keys = Array.from(template.matchAll(/\{([^}]+)\}/gu)).map((match) => match[1] || "");
   return keys.every((key) => {

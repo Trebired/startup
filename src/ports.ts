@@ -36,10 +36,10 @@ const LOOPBACK_HOST = "localhost";
 const WILDCARD_HOSTS = new Set(["", "0.0.0.0", "::", "[::]", "*"]);
 
 /**
- * The host a bound wildcard address is reachable on is loopback, not the
- * literal `0.0.0.0`, so an origin built for a startup message uses localhost
- * unless a concrete host was configured.
- */
+* The host a bound wildcard address is reachable on is loopback, not the
+* literal `0.0.0.0`, so an origin built for a startup message uses localhost
+* unless a concrete host was configured.
+*/
 function resolvePrimaryHost(
   config: NormalizedConfig,
   env: StartupEnv = process.env,

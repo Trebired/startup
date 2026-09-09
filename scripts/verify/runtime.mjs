@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import packageJson from "../../package.json" with { type: "json" };
+import packageJson from "../../package.json"with { type: "json" };
 
 const FIXTURE_FOR_VERSION = packageJson.version;
 
@@ -177,9 +177,9 @@ async function verifyMessagePresets() {
 
   // purpose-built: requirementConfig() disables `welcome`, which these cases need
   const base = () => ({
-    forVersion: FIXTURE_FOR_VERSION,
-    product: { name: "Verify", version: "9.9.9" },
-    requirements: { ports: [{ defaultValue: 3210, env: "PORT" }] },
+      forVersion: FIXTURE_FOR_VERSION,
+      product: { name: "Verify", version: "9.9.9" },
+      requirements: { ports: [{ defaultValue: 3210, env: "PORT" }] },
   });
   const emit = (config, key, data = {}) => {
     const logs = [];

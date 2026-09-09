@@ -6,6 +6,8 @@ import { ok, unavailable } from "@package/result";
 
 import { normalizeConfig } from "#config-normalize";
 import { STARTUP_LOG_GROUP } from "#constants";
+
+const MAX_SUMMARIZED_FAILURES = 4;
 import { isPortInUse, parsePort, resolvePort } from "#ports";
 import { resolveLogger } from "#logging";
 import {
@@ -290,6 +292,19 @@ type PgClient = {
   end: () => Promise<void>;
 };
 
+function describeFailure(failure: StartupRequirementFailure): string {
+  const detail = toString(failure.message) || toString(failure.status_code);
+  const subject = toString(failure.key) || toString(failure.path) || toString(failure.value);
+  return subject ? `${failure.check}: ${detail} (${subject})` : `${failure.check}: ${detail}`;
+}
+
+function summarizeFailures(failures: readonly StartupRequirementFailure[]): string {
+  const listed = failures.slice(0, MAX_SUMMARIZED_FAILURES).map(describeFailure);
+  const remaining = failures.length - listed.length;
+  if (remaining > 0) listed.push(`and ${remaining} more`);
+  return listed.join("; ");
+}
+
 function requirementResult(
   context: StartupRequirementContext,
   failures: StartupRequirementFailure[],
@@ -299,7 +314,7 @@ function requirementResult(
     context.logger.log("success", requirementLogGroup(), "requirements:ok", { ports: data.ports });
     return ok<StartupRequirementData>("startup-requirements-ok", { data, message: false });
   }
-  context.logger.fail(requirementLogGroup(), "requirements:failed", { failures });
+  context.logger.fail(requirementLogGroup(), `requirements:failed :: ${summarizeFailures(failures)}`, { failures });
   return unavailable<StartupRequirementData>("startup-requirements-failed", { data, message: false });
 }
 

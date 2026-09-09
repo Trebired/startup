@@ -60,6 +60,7 @@ function normalizeForVersion(
   options: NormalizeOptions,
 ): string {
   return resolveForVersion({
+      config,
       configPath: options.configPath,
       forVersion: config.forVersion,
       label: "startup",
@@ -217,9 +218,9 @@ function normalizeMessages(input: MessagesConfig | undefined) {
 }
 
 /**
- * Explicit `text` wins over a preset, a named preset wins over the key's
- * default preset. `level` follows the same order.
- */
+* Explicit `text` wins over a preset, a named preset wins over the key's
+* default preset. `level` follows the same order.
+*/
 function normalizeMessage(key: string, input: MessageConfig) {
   const preset = resolveMessagePreset(key, input.preset);
   const text = uniqueStrings(input.text);
