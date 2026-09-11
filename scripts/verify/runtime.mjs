@@ -23,6 +23,9 @@ import {
   runStartup,
   runStartupSteps,
 } from "#index";
+import { resolveLogger } from "@package/logger-adapter";
+
+const log = resolveLogger({ source: "@trebired/startup" });
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const tempRoot = path.join(rootDir, ".tmp", "verify-runtime");
@@ -36,7 +39,7 @@ async function main() {
   await verifyGenericHelpers();
   await verifyRuntime();
   await verifyShutdownSignals();
-  console.log("Runtime verification succeeded.");
+  log.info("verify.runtime", "Runtime verification succeeded.");
 }
 
 async function resetTemp() {
