@@ -63,8 +63,11 @@ type StartupRequirementCheck = (
 type StartupMessageData = Record<string, unknown>& {
   duration?: string;
   loopbackOrigin?: string;
+  loopbackOrigins?: readonly string[];
   origin?: string;
+  origins?: readonly string[];
   port?: number | string;
+  ports?: readonly (number | string)[];
   product?: {
     name?: string;
     version?: string;

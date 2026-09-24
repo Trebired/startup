@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.0
+
+- Added multi-port startup messages. `messageData` now accepts `ports`, `origins` and `loopbackOrigins` alongside the existing singular fields, and the `{ports}`, `{origins}` and `{loopbackOrigins}` placeholders render them as a comma separated list.
+- `{port}`, `{origin}` and `{loopbackOrigin}` fall back to the plural value when only the plural is supplied, so an app that serves several ports no longer reports just one of them as if it were the only one.
+- Added the `ready.multi` message preset: `Server ready :: {origins} ({duration})`.
+- The runtime metadata on the ready message now carries `ports`, `origins` and `loopback_origins`.
+
 ## 0.7.3
 
 - Moved to `@trebired/logger-adapter` 0.6.0, which depends on `@trebired/logger` 3.0.0.

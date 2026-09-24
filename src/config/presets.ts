@@ -28,6 +28,10 @@ const MESSAGE_PRESETS: MessagePresetRegistry = {
       level: "success",
       text: ["Server ready :: {origin}"],
     },
+    multi: {
+      level: "success",
+      text: ["Server ready :: {origins} ({duration})"],
+    },
     timed: {
       level: "success",
       text: ["Server ready :: {origin} ({duration})"],

@@ -70,13 +70,27 @@ function createTemplateData(
   };
 }
 
+function joinValues(values: unknown): string {
+  if (!Array.isArray(values)) return "";
+  return values.filter((value) => value !== undefined && value !== null && value !== "").join(", ");
+}
+
+function firstOrAll(single: unknown, many: unknown): unknown {
+  const joined = joinValues(many);
+  if (joined) return joined;
+  return single;
+}
+
 function resolveTemplateValue(data: StartupMessageData, key: string): unknown {
   if (key === "product.name") return data.product?.name;
   if (key === "product.version") return data.product?.version;
   if (key === "duration") return data.duration;
-  if (key === "loopbackOrigin") return data.loopbackOrigin;
-  if (key === "origin") return data.origin;
-  if (key === "port") return data.port;
+  if (key === "loopbackOrigin") return firstOrAll(data.loopbackOrigin, data.loopbackOrigins);
+  if (key === "loopbackOrigins") return joinValues(data.loopbackOrigins);
+  if (key === "origin") return firstOrAll(data.origin, data.origins);
+  if (key === "origins") return joinValues(data.origins);
+  if (key === "port") return firstOrAll(data.port, data.ports);
+  if (key === "ports") return joinValues(data.ports);
   if (key === "startupMs") return data.startupMs;
   return data[key];
 }
@@ -85,8 +99,11 @@ function runtimeMetadata(data: StartupMessageData): Record<string, unknown> {
   return {
     duration: data.duration,
     loopback_origin: data.loopbackOrigin,
+    loopback_origins: data.loopbackOrigins,
     origin: data.origin,
+    origins: data.origins,
     port: data.port,
+    ports: data.ports,
     product_name: data.product?.name,
     product_version: data.product?.version,
     startup_ms: data.startupMs,
