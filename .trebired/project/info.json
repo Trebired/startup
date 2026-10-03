@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "category": "package",
+  "subcategory": "runtime",
+  "status": "active",
+  "npm": "@trebired/startup",
+  "description": {
+    "en": "The startup shell: config loading, preflight checks and lifecycle glue.",
+    "cs": "Startovací vrstva: načtení konfigurace, preflight kontroly a napojení životního cyklu."
+  }
+}
